@@ -1,0 +1,35 @@
+[
+  {
+    "id": "mbappe",
+    "name": "Kylian Mbappe",
+    "team": "France",
+    "teamCode": "FRA",
+    "position": "FWD",
+    "price": 11.5,
+    "points": 0,
+    "jerseyNumber": 10,
+    "nextFixture": "FRA vs TBD"
+  },
+  {
+    "id": "bellingham",
+    "name": "Jude Bellingham",
+    "team": "England",
+    "teamCode": "ENG",
+    "position": "MID",
+    "price": 9.5,
+    "points": 0,
+    "jerseyNumber": 10,
+    "nextFixture": "ENG vs TBD"
+  },
+  {
+    "id": "vinicius",
+    "name": "Vinicius Junior",
+    "team": "Brazil",
+    "teamCode": "BRA",
+    "position": "FWD",
+    "price": 10,
+    "points": 0,
+    "jerseyNumber": 7,
+    "nextFixture": "BRA vs TBD"
+  }
+]

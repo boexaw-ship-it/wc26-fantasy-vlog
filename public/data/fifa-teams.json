@@ -1,0 +1,20 @@
+[
+  {
+    "id": "france",
+    "name": "France",
+    "code": "FRA",
+    "group": "TBD"
+  },
+  {
+    "id": "england",
+    "name": "England",
+    "code": "ENG",
+    "group": "TBD"
+  },
+  {
+    "id": "brazil",
+    "name": "Brazil",
+    "code": "BRA",
+    "group": "TBD"
+  }
+]
