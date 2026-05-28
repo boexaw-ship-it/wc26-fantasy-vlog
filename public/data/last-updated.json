@@ -1,5 +1,5 @@
 {
   "source": "FIFA Fantasy read-only cache",
-  "updatedAt": "2026-05-28T15:40:24.356Z",
+  "updatedAt": "2026-05-28T20:12:01.618Z",
   "note": "Replace the mock data in scripts/update-fifa-data.js when a stable public FIFA data endpoint is available."
 }
