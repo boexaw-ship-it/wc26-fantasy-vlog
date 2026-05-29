@@ -19,6 +19,11 @@ jobs:
         with:
           node-version: 20
 
+      - name: Install scraper browser
+        run: |
+          npm install --no-save playwright
+          npx playwright install --with-deps chromium
+
       - name: Update cached fantasy data
         run: node scripts/update-fifa-data.js
 
