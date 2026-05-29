@@ -5,97 +5,35 @@ const FIFA_FANTASY_URL =
 const dataDir = new URL("../public/data/", import.meta.url);
 
 const monthMap = new Map([
-  ["january", "01"],
-  ["february", "02"],
-  ["march", "03"],
-  ["april", "04"],
-  ["may", "05"],
-  ["june", "06"],
-  ["july", "07"],
-  ["august", "08"],
-  ["september", "09"],
-  ["october", "10"],
-  ["november", "11"],
-  ["december", "12"],
-  ["enero", "01"],
-  ["febrero", "02"],
-  ["marzo", "03"],
-  ["abril", "04"],
-  ["mayo", "05"],
-  ["junio", "06"],
-  ["julio", "07"],
-  ["agosto", "08"],
-  ["septiembre", "09"],
-  ["octubre", "10"],
-  ["noviembre", "11"],
-  ["diciembre", "12"],
+  ["january", "01"], ["february", "02"], ["march", "03"], ["april", "04"],
+  ["may", "05"], ["june", "06"], ["july", "07"], ["august", "08"],
+  ["september", "09"], ["october", "10"], ["november", "11"], ["december", "12"],
+  ["enero", "01"], ["febrero", "02"], ["marzo", "03"], ["abril", "04"],
+  ["mayo", "05"], ["junio", "06"], ["julio", "07"], ["agosto", "08"],
+  ["septiembre", "09"], ["octubre", "10"], ["noviembre", "11"], ["diciembre", "12"],
 ]);
 
 const positionMap = new Map([
-  ["GK", "GK"],
-  ["GKP", "GK"],
-  ["POR", "GK"],
-  ["ARQ", "GK"],
-  ["DEF", "DEF"],
-  ["DF", "DEF"],
-  ["MID", "MID"],
-  ["CEN", "MID"],
-  ["MED", "MID"],
-  ["FWD", "FWD"],
-  ["DEL", "FWD"],
-  ["ATT", "FWD"],
+  ["GK", "GK"], ["GKP", "GK"], ["POR", "GK"], ["ARQ", "GK"],
+  ["DEF", "DEF"], ["DF", "DEF"],
+  ["MID", "MID"], ["CEN", "MID"], ["MED", "MID"],
+  ["FWD", "FWD"], ["DEL", "FWD"], ["ATT", "FWD"],
 ]);
 
 const teamNamesByCode = {
-  ALG: "Algeria",
-  ARG: "Argentina",
-  AUS: "Australia",
-  AUT: "Austria",
-  BEL: "Belgium",
-  BIH: "Bosnia and Herzegovina",
-  BRA: "Brazil",
-  CAN: "Canada",
-  CIV: "Cote d'Ivoire",
-  CMR: "Cameroon",
-  COD: "Congo DR",
-  COL: "Colombia",
-  CPV: "Cape Verde",
-  CRO: "Croatia",
-  CUW: "Curacao",
-  CZE: "Czechia",
-  ECU: "Ecuador",
-  EGY: "Egypt",
-  ENG: "England",
-  ESP: "Spain",
-  FRA: "France",
-  GER: "Germany",
-  GHA: "Ghana",
-  HAI: "Haiti",
-  IRN: "IR Iran",
-  IRQ: "Iraq",
-  JOR: "Jordan",
-  JPN: "Japan",
-  KOR: "Korea Republic",
-  MAR: "Morocco",
-  MEX: "Mexico",
-  NED: "Netherlands",
-  NOR: "Norway",
-  NZL: "New Zealand",
-  PAN: "Panama",
-  PAR: "Paraguay",
-  POR: "Portugal",
-  QAT: "Qatar",
-  KSA: "Saudi Arabia",
-  SCO: "Scotland",
-  SEN: "Senegal",
-  RSA: "South Africa",
-  SUI: "Switzerland",
-  SWE: "Sweden",
-  TUN: "Tunisia",
-  TUR: "Turkiye",
-  URU: "Uruguay",
-  USA: "USA",
-  UZB: "Uzbekistan",
+  ALG: "Algeria", ARG: "Argentina", AUS: "Australia", AUT: "Austria",
+  BEL: "Belgium", BIH: "Bosnia and Herzegovina", BRA: "Brazil",
+  CAN: "Canada", CIV: "Cote d'Ivoire", CMR: "Cameroon", COD: "Congo DR",
+  COL: "Colombia", CPV: "Cape Verde", CRO: "Croatia", CUW: "Curacao",
+  CZE: "Czechia", ECU: "Ecuador", EGY: "Egypt", ENG: "England",
+  ESP: "Spain", FRA: "France", GER: "Germany", GHA: "Ghana",
+  HAI: "Haiti", IRN: "IR Iran", IRQ: "Iraq", JOR: "Jordan",
+  JPN: "Japan", KOR: "Korea Republic", MAR: "Morocco", MEX: "Mexico",
+  NED: "Netherlands", NOR: "Norway", NZL: "New Zealand", PAN: "Panama",
+  PAR: "Paraguay", POR: "Portugal", QAT: "Qatar", KSA: "Saudi Arabia",
+  SCO: "Scotland", SEN: "Senegal", RSA: "South Africa", SUI: "Switzerland",
+  SWE: "Sweden", TUN: "Tunisia", TUR: "Turkiye", URU: "Uruguay",
+  USA: "USA", UZB: "Uzbekistan",
 };
 
 const codeByTeamName = new Map(
@@ -103,7 +41,7 @@ const codeByTeamName = new Map(
 );
 
 function normalizeName(value) {
-  return value
+  return String(value || "")
     .normalize("NFD")
     .replace(/\p{Diacritic}/gu, "")
     .toLowerCase()
@@ -116,28 +54,26 @@ function makeId(name, teamCode) {
 }
 
 function parsePrice(value) {
-  const match = value.match(/\$?\s*([0-9]+(?:[.,][0-9]+)?)\s*m/i);
+  const match = String(value || "").match(/\$?\s*([0-9]+(?:[.,][0-9]+)?)\s*m/i);
   return match ? Number(match[1].replace(",", ".")) : 0;
 }
 
 function parseDate(line) {
-  const match = line
+  const match = String(line || "")
     .toLowerCase()
     .match(/(?:monday|tuesday|wednesday|thursday|friday|saturday|sunday|lunes|martes|miércoles|miercoles|jueves|viernes|sábado|sabado|domingo)\s+(\d{1,2})\s+([a-záéíóúñ]+)\s+(\d{4})/i);
 
   if (!match) return null;
 
   const day = match[1].padStart(2, "0");
-  const month = monthMap.get(match[2].normalize("NFD").replace(/\p{Diacritic}/gu, ""));
+  const cleanMonth = match[2].normalize("NFD").replace(/\p{Diacritic}/gu, "");
+  const month = monthMap.get(cleanMonth);
 
   return month ? `${match[3]}-${month}-${day}` : null;
 }
 
 function normalizeTeamCode(code) {
-  const normalized = code.toUpperCase();
-  if (normalized === "CPV") return "CPV";
-  if (normalized === "COD") return "COD";
-  return normalized;
+  return String(code || "").toUpperCase();
 }
 
 function codeFromTeamName(name) {
@@ -150,23 +86,28 @@ function teamNameFromCode(code) {
 
 async function renderFifaPage() {
   const { chromium } = await import("playwright");
+
   const browser = await chromium.launch({
     headless: true,
     args: ["--no-sandbox", "--disable-setuid-sandbox"],
   });
+
   const page = await browser.newPage({
-    viewport: { width: 1440, height: 1800 },
+    viewport: { width: 1440, height: 2200 },
     userAgent:
       "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126 Safari/537.36",
   });
 
   await page.goto(FIFA_FANTASY_URL, {
-    waitUntil: "networkidle",
-    timeout: 90_000,
+    waitUntil: "domcontentloaded",
+    timeout: 120_000,
   });
 
-  await clickIfVisible(page, /accept|agree|aceptar|allow all|confirm/i);
-  await page.waitForTimeout(5_000);
+  await clickIfVisible(page, /accept|agree|aceptar|allow all|confirm|confirmar/i);
+
+  await page.waitForTimeout(12_000);
+
+  await autoScroll(page);
 
   const text = await page.locator("body").innerText({ timeout: 30_000 });
   await browser.close();
@@ -190,6 +131,24 @@ async function clickIfVisible(page, labelPattern) {
       return;
     }
   }
+}
+
+async function autoScroll(page) {
+  await page.evaluate(async () => {
+    await new Promise((resolve) => {
+      let totalHeight = 0;
+      const distance = 800;
+      const timer = setInterval(() => {
+        window.scrollBy(0, distance);
+        totalHeight += distance;
+
+        if (totalHeight >= document.body.scrollHeight - window.innerHeight) {
+          clearInterval(timer);
+          resolve();
+        }
+      }, 250);
+    });
+  });
 }
 
 function parsePlayers(text) {
@@ -244,6 +203,7 @@ function inferPlayerTeamCode(name, homeCode, awayCode) {
 
   if (normalizedName.includes(homeName)) return homeCode;
   if (normalizedName.includes(awayName)) return awayCode;
+
   return [homeCode, awayCode].find((code) => teamNamesByCode[code]) || homeCode;
 }
 
@@ -306,6 +266,7 @@ function buildGroups(fixtures) {
     if (!groups.has(fixture.group)) groups.set(fixture.group, new Map());
 
     const group = groups.get(fixture.group);
+
     for (const [name, code] of [
       [fixture.homeTeam, fixture.homeTeamCode],
       [fixture.awayTeam, fixture.awayTeamCode],
@@ -335,7 +296,7 @@ function buildGroups(fixtures) {
 }
 
 function usefulLines(text) {
-  return text
+  return String(text || "")
     .split(/\r?\n/)
     .map((line) => line.replace(/\s+/g, " ").trim())
     .filter(Boolean)
