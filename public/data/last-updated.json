@@ -1,5 +1,8 @@
 {
-  "source": "FIFA Fantasy read-only cache",
-  "updatedAt": "2026-05-28T20:12:01.618Z",
-  "note": "Replace the mock data in scripts/update-fifa-data.js when a stable public FIFA data endpoint is available."
+  "source": "WC2026 Static Data (manually curated)",
+  "updatedAt": "2026-05-29T03:48:53.282Z",
+  "totalPlayers": 70,
+  "totalFixtures": 33,
+  "totalGroups": 12,
+  "note": "Data manually curated from official WC2026 announcements. Update when official API becomes available."
 }
