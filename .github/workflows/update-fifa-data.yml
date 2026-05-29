@@ -1,32 +1,29 @@
-name: Update FIFA WC2026 Data
+name: Update FIFA Fantasy Data
 
 on:
-  schedule:
-    - cron: '0 6 * * *'   # daily 6am UTC
-  workflow_dispatch:        # manual trigger anytime
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   update-data:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
 
     steps:
-      - name: Checkout repo
+      - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: 20
 
-      - name: Run data update script
+      - name: Update cached fantasy data
         run: node scripts/update-fifa-data.js
 
       - name: Commit updated data
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add public/data/
-          git diff --cached --quiet || git commit -m "chore: update WC2026 data [$(date -u '+%Y-%m-%d %H:%M')]"
-          git push
+        uses: stefanzweifel/git-auto-commit-action@v5
+        with:
+          commit_message: "chore: update FIFA fantasy data [manual run]"
+          file_pattern: public/data/*.json
