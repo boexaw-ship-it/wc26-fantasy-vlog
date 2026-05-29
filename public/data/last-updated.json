@@ -1,8 +1,8 @@
 {
-  "source": "WC2026 Manual Curated Data",
-  "updatedAt": "2026-05-29T05:38:55.034Z",
-  "totalPlayers": 60,
-  "totalFixtures": 41,
-  "totalGroups": 8,
-  "note": "Points updated manually from FIFA Fantasy official app after each match week."
+  "source": "https://play.fifa.com/fantasy/es/team",
+  "updatedAt": "2026-05-29T12:05:28.497Z",
+  "totalPlayers": 21,
+  "totalFixtures": 24,
+  "totalGroups": 12,
+  "note": "Official FIFA Fantasy page rendered with Playwright and normalized for the vlog app."
 }

@@ -3,28 +3,6 @@
     "group": "A",
     "teams": [
       {
-        "name": "USA",
-        "code": "USA",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
-        "name": "Canada",
-        "code": "CAN",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
         "name": "Mexico",
         "code": "MEX",
         "played": 0,
@@ -36,8 +14,30 @@
         "pts": 0
       },
       {
-        "name": "Morocco",
-        "code": "MAR",
+        "name": "South Africa",
+        "code": "RSA",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Korea Republic",
+        "code": "KOR",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Czechia",
+        "code": "CZE",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -52,8 +52,8 @@
     "group": "B",
     "teams": [
       {
-        "name": "France",
-        "code": "FRA",
+        "name": "Canada",
+        "code": "CAN",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -63,8 +63,8 @@
         "pts": 0
       },
       {
-        "name": "Argentina",
-        "code": "ARG",
+        "name": "Bosnia and Herzegovina",
+        "code": "BIH",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -74,8 +74,8 @@
         "pts": 0
       },
       {
-        "name": "England",
-        "code": "ENG",
+        "name": "Qatar",
+        "code": "QAT",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -85,8 +85,8 @@
         "pts": 0
       },
       {
-        "name": "Tunisia",
-        "code": "TUN",
+        "name": "Switzerland",
+        "code": "SUI",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -112,8 +112,8 @@
         "pts": 0
       },
       {
-        "name": "Spain",
-        "code": "ESP",
+        "name": "Morocco",
+        "code": "MAR",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -123,8 +123,8 @@
         "pts": 0
       },
       {
-        "name": "Germany",
-        "code": "GER",
+        "name": "Haiti",
+        "code": "HAI",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -134,8 +134,8 @@
         "pts": 0
       },
       {
-        "name": "Mexico",
-        "code": "MEX",
+        "name": "Scotland",
+        "code": "SCO",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -150,8 +150,8 @@
     "group": "D",
     "teams": [
       {
-        "name": "Portugal",
-        "code": "POR",
+        "name": "USA",
+        "code": "USA",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -161,8 +161,8 @@
         "pts": 0
       },
       {
-        "name": "Belgium",
-        "code": "BEL",
+        "name": "Paraguay",
+        "code": "PAR",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -172,8 +172,8 @@
         "pts": 0
       },
       {
-        "name": "Morocco",
-        "code": "MAR",
+        "name": "Australia",
+        "code": "AUS",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -183,8 +183,8 @@
         "pts": 0
       },
       {
-        "name": "Croatia",
-        "code": "CRO",
+        "name": "Türkiye",
+        "code": "TUR",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -199,8 +199,8 @@
     "group": "E",
     "teams": [
       {
-        "name": "Netherlands",
-        "code": "NED",
+        "name": "Germany",
+        "code": "GER",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -210,8 +210,8 @@
         "pts": 0
       },
       {
-        "name": "Uruguay",
-        "code": "URU",
+        "name": "Curaçao",
+        "code": "CUW",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -221,8 +221,8 @@
         "pts": 0
       },
       {
-        "name": "Senegal",
-        "code": "SEN",
+        "name": "Côte d'Ivoire",
+        "code": "CIV",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -248,19 +248,8 @@
     "group": "F",
     "teams": [
       {
-        "name": "Nigeria",
-        "code": "NGA",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
-        "name": "Poland",
-        "code": "POL",
+        "name": "Netherlands",
+        "code": "NED",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -281,8 +270,19 @@
         "pts": 0
       },
       {
-        "name": "South Korea",
-        "code": "KOR",
+        "name": "Sweden",
+        "code": "SWE",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Tunisia",
+        "code": "TUN",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -297,8 +297,68 @@
     "group": "G",
     "teams": [
       {
-        "name": "Colombia",
-        "code": "COL",
+        "name": "Belgium",
+        "code": "BEL",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Egypt",
+        "code": "EGY",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "IR Iran",
+        "code": "IRN",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "New Zealand",
+        "code": "NZL",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      }
+    ]
+  },
+  {
+    "group": "H",
+    "teams": [
+      {
+        "name": "Spain",
+        "code": "ESP",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Cabo Verde",
+        "code": "",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -319,19 +379,8 @@
         "pts": 0
       },
       {
-        "name": "Cameroon",
-        "code": "CMR",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
-        "name": "Switzerland",
-        "code": "SUI",
+        "name": "Uruguay",
+        "code": "URU",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -343,11 +392,11 @@
     ]
   },
   {
-    "group": "H",
+    "group": "I",
     "teams": [
       {
-        "name": "Australia",
-        "code": "AUS",
+        "name": "France",
+        "code": "FRA",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -357,8 +406,155 @@
         "pts": 0
       },
       {
-        "name": "Iran",
-        "code": "IRN",
+        "name": "Senegal",
+        "code": "SEN",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Iraq",
+        "code": "IRQ",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Norway",
+        "code": "NOR",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      }
+    ]
+  },
+  {
+    "group": "J",
+    "teams": [
+      {
+        "name": "Argentina",
+        "code": "ARG",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Algeria",
+        "code": "ALG",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Austria",
+        "code": "AUT",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Jordan",
+        "code": "JOR",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      }
+    ]
+  },
+  {
+    "group": "K",
+    "teams": [
+      {
+        "name": "Portugal",
+        "code": "POR",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Congo DR",
+        "code": "COD",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Uzbekistan",
+        "code": "UZB",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Colombia",
+        "code": "COL",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      }
+    ]
+  },
+  {
+    "group": "L",
+    "teams": [
+      {
+        "name": "England",
+        "code": "ENG",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Croatia",
+        "code": "CRO",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -379,8 +575,8 @@
         "pts": 0
       },
       {
-        "name": "Serbia",
-        "code": "SRB",
+        "name": "Panama",
+        "code": "PAN",
         "played": 0,
         "won": 0,
         "drawn": 0,
