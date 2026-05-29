@@ -13,6 +13,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          persist-credentials: true
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -27,8 +29,16 @@ jobs:
       - name: Update cached fantasy data
         run: node scripts/update-fifa-data.js
 
+      - name: Show generated data
+        run: |
+          ls -la public/data
+          git status --short
+          head -40 public/data/last-updated.json
+
       - name: Commit updated data
-        uses: stefanzweifel/git-auto-commit-action@v5
-        with:
-          commit_message: "chore: update FIFA fantasy data [manual run]"
-          file_pattern: public/data/*.json
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add public/data/*.json
+          git diff --cached --quiet && echo "No data changes to commit" || git commit -m "chore: update FIFA fantasy data"
+          git push
