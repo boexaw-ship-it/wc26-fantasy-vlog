@@ -184,7 +184,7 @@ function StatusScreen({ title, message }) {
 }
 
 function MyTeam({ players, formation, captainId, viceCaptainId }) {
-  const rows = buildFormationRows(players, formation);
+  const layout = buildTeamLayout(players, formation);
 
   return (
     <div style={S.pitchWrap}>
@@ -194,7 +194,7 @@ function MyTeam({ players, formation, captainId, viceCaptainId }) {
           <h2 style={S.sectionTitle}>{formation}</h2>
         </div>
         <div style={S.legend}>
-          <span>Price and next fixture are shown on every card.</span>
+          <span>Starters, bench, price and next fixture are ready for vlog.</span>
         </div>
       </div>
 
@@ -202,7 +202,7 @@ function MyTeam({ players, formation, captainId, viceCaptainId }) {
         <PitchLines />
         {POSITION_ROWS.map((position) => (
           <div key={position} style={S.pitchRow}>
-            {rows[position].map((player, index) =>
+            {layout.rows[position].map((player, index) =>
               player ? (
                 <PlayerToken
                   key={player.id}
@@ -217,6 +217,15 @@ function MyTeam({ players, formation, captainId, viceCaptainId }) {
           </div>
         ))}
       </div>
+
+      <BenchSection
+        bench={layout.bench}
+        starters={layout.starters}
+        captainId={captainId}
+        viceCaptainId={viceCaptainId}
+      />
+
+      <SwitchPanel bench={layout.bench} starters={layout.starters} />
     </div>
   );
 }
@@ -316,26 +325,29 @@ function Fixtures({ fixtures }) {
 }
 
 function VlogMode({ players, formation, teamName, captain, viceCaptain }) {
+  const layout = buildTeamLayout(players, formation);
+
   return (
     <div style={S.vlog}>
       <div style={S.rec}>REC | VLOG MODE</div>
       <h2 style={S.vlogTitle}>{teamName}</h2>
-      <p style={S.vlogMeta}>
-        {formation}
-        {captain ? ` | Captain: ${captain.name}` : ""}
-        {viceCaptain ? ` | Vice: ${viceCaptain.name}` : ""}
-      </p>
+      <div style={S.vlogCaptainRow}>
+        <CaptainCard label="Captain" player={captain} type="captain" />
+        <div style={S.vlogFormation}>{formation}</div>
+        <CaptainCard label="Vice Captain" player={viceCaptain} type="vice" />
+      </div>
       <MyTeam
         players={players}
         formation={formation}
         captainId={captain?.id}
         viceCaptainId={viceCaptain?.id}
       />
+      <SquadStrip players={layout.allPlayers} captainId={captain?.id} viceCaptainId={viceCaptain?.id} />
     </div>
   );
 }
 
-function buildFormationRows(players, formation) {
+function buildTeamLayout(players, formation) {
   const shape = FORMATIONS[formation] || FORMATIONS["3-4-3"];
   const byPosition = {
     GK: players.filter((player) => player.position === "GK"),
@@ -344,11 +356,25 @@ function buildFormationRows(players, formation) {
     FWD: players.filter((player) => player.position === "FWD"),
   };
 
+  const starters = [
+    ...byPosition.GK.slice(0, 1),
+    ...byPosition.DEF.slice(0, shape.DEF),
+    ...byPosition.MID.slice(0, shape.MID),
+    ...byPosition.FWD.slice(0, shape.FWD),
+  ];
+  const starterIds = new Set(starters.map((player) => player.id));
+  const bench = players.filter((player) => !starterIds.has(player.id)).slice(0, 4);
+
   return {
-    FWD: fillSlots(byPosition.FWD, shape.FWD),
-    MID: fillSlots(byPosition.MID, shape.MID),
-    DEF: fillSlots(byPosition.DEF, shape.DEF),
-    GK: fillSlots(byPosition.GK, 1),
+    rows: {
+      FWD: fillSlots(byPosition.FWD.slice(0, shape.FWD), shape.FWD),
+      MID: fillSlots(byPosition.MID.slice(0, shape.MID), shape.MID),
+      DEF: fillSlots(byPosition.DEF.slice(0, shape.DEF), shape.DEF),
+      GK: fillSlots(byPosition.GK.slice(0, 1), 1),
+    },
+    starters,
+    bench: fillSlots(bench, 4),
+    allPlayers: [...starters, ...bench],
   };
 }
 
@@ -375,6 +401,152 @@ function PlayerToken({ player, captain, viceCaptain }) {
       <span style={S.tokenFixture}>{player.nextFixture || "Fixture TBD"}</span>
     </article>
   );
+}
+
+function BenchSection({ bench, starters, captainId, viceCaptainId }) {
+  return (
+    <section style={S.benchSection}>
+      <div style={S.benchHeader}>
+        <div>
+          <div style={S.kicker}>Bench</div>
+          <h2 style={S.benchTitle}>Substitutes 4</h2>
+        </div>
+        <span style={S.benchHint}>Switch options are shown below.</span>
+      </div>
+      <div style={S.benchGrid}>
+        {bench.map((player, index) =>
+          player ? (
+            <BenchCard
+              key={player.id}
+              player={player}
+              index={index}
+              captain={player.id === captainId}
+              viceCaptain={player.id === viceCaptainId}
+              switchTargets={getSwitchTargets(player, starters)}
+            />
+          ) : (
+            <EmptyBenchCard key={`bench-empty-${index}`} index={index} />
+          )
+        )}
+      </div>
+    </section>
+  );
+}
+
+function BenchCard({ player, index, captain, viceCaptain, switchTargets }) {
+  const [primary, secondary] = getTeamColors(player.teamCode);
+
+  return (
+    <article style={S.benchCard}>
+      <span style={S.benchNumber}>B{index + 1}</span>
+      {captain && <span style={S.captainBadge}>C</span>}
+      {viceCaptain && <span style={S.viceBadge}>VC</span>}
+      <Jersey
+        primary={primary}
+        secondary={secondary}
+        number={player.jerseyNumber || "-"}
+        size={52}
+      />
+      <strong style={S.tokenName}>{player.name}</strong>
+      <span style={S.tokenMeta}>
+        {player.position} | ${Number(player.price || 0).toFixed(1)}m
+      </span>
+      <span style={S.tokenFixture}>{player.nextFixture || "Fixture TBD"}</span>
+      <span style={S.switchText}>
+        Switch: {switchTargets.length ? switchTargets.join(", ") : "No same-position starter"}
+      </span>
+    </article>
+  );
+}
+
+function EmptyBenchCard({ index }) {
+  return (
+    <article style={{ ...S.benchCard, ...S.emptyToken }}>
+      <span style={S.benchNumber}>B{index + 1}</span>
+      <div style={S.emptyJersey}>+</div>
+      <strong style={S.tokenName}>Bench</strong>
+      <span style={S.tokenMeta}>Empty slot</span>
+      <span style={S.tokenFixture}>Add substitute</span>
+    </article>
+  );
+}
+
+function SwitchPanel({ bench, starters }) {
+  const availableBench = bench.filter(Boolean);
+
+  return (
+    <section style={S.switchPanel}>
+      <div style={S.switchTitle}>Player Switch Preview</div>
+      {availableBench.length ? (
+        <div style={S.switchGrid}>
+          {availableBench.map((player) => {
+            const targets = getSwitchTargets(player, starters);
+            return (
+              <div key={player.id} style={S.switchItem}>
+                <strong>{player.name}</strong>
+                <span>
+                  {player.position} bench can switch with{" "}
+                  {targets.length ? targets.join(", ") : "no current starter"}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <p style={S.vlogMeta}>Add bench players in my-team.json to show switch options.</p>
+      )}
+    </section>
+  );
+}
+
+function CaptainCard({ label, player, type }) {
+  return (
+    <div style={S.captainCard}>
+      <span style={type === "captain" ? S.captainPill : S.vicePill}>
+        {type === "captain" ? "C" : "VC"}
+      </span>
+      <div>
+        <div style={S.captainLabel}>{label}</div>
+        <strong>{player?.name || "Not selected"}</strong>
+        {player && (
+          <span style={S.captainFixture}>
+            {player.teamCode} | ${Number(player.price || 0).toFixed(1)}m |{" "}
+            {player.nextFixture || "Fixture TBD"}
+          </span>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function SquadStrip({ players, captainId, viceCaptainId }) {
+  return (
+    <section style={S.squadStrip}>
+      <div style={S.switchTitle}>Full Vlog Squad</div>
+      <div style={S.squadGrid}>
+        {players.filter(Boolean).map((player) => (
+          <div key={player.id} style={S.squadChip}>
+            <strong>
+              {player.name}
+              {player.id === captainId ? " (C)" : ""}
+              {player.id === viceCaptainId ? " (VC)" : ""}
+            </strong>
+            <span>
+              {player.position} | {player.teamCode} | ${Number(player.price || 0).toFixed(1)}m |{" "}
+              {player.nextFixture || "Fixture TBD"}
+            </span>
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+function getSwitchTargets(player, starters) {
+  return starters
+    .filter((starter) => starter.position === player.position)
+    .map((starter) => starter.name)
+    .slice(0, 3);
 }
 
 function EmptyToken({ position }) {
@@ -607,6 +779,98 @@ const S = {
     position: "relative",
     boxSizing: "border-box",
   },
+  benchSection: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 14,
+    background: "#0b1626",
+    border: "1px solid rgba(255,255,255,.08)",
+  },
+  benchHeader: {
+    display: "flex",
+    alignItems: "flex-end",
+    justifyContent: "space-between",
+    gap: 10,
+    marginBottom: 10,
+  },
+  benchTitle: {
+    margin: "2px 0 0",
+    color: "#ffffff",
+    fontSize: 18,
+    fontWeight: 900,
+  },
+  benchHint: {
+    color: "#94a3b8",
+    fontSize: 12,
+    textAlign: "right",
+  },
+  benchGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, minmax(0, 1fr))",
+    gap: 8,
+  },
+  benchCard: {
+    minHeight: 156,
+    padding: "10px 7px",
+    borderRadius: 12,
+    background: "#0f1a2b",
+    border: "1px solid rgba(255,255,255,.1)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    position: "relative",
+    boxSizing: "border-box",
+  },
+  benchNumber: {
+    position: "absolute",
+    top: 6,
+    left: 6,
+    padding: "2px 5px",
+    borderRadius: 999,
+    background: "rgba(250,204,21,.16)",
+    color: "#fde68a",
+    fontSize: 10,
+    fontWeight: 900,
+  },
+  switchText: {
+    marginTop: 6,
+    width: "100%",
+    color: "#93c5fd",
+    fontSize: 9,
+    lineHeight: 1.25,
+    textAlign: "center",
+  },
+  switchPanel: {
+    marginTop: 12,
+    padding: 12,
+    borderRadius: 14,
+    background: "#101b2d",
+    border: "1px solid rgba(56,189,248,.18)",
+  },
+  switchTitle: {
+    marginBottom: 8,
+    color: "#facc15",
+    fontSize: 12,
+    fontWeight: 900,
+    letterSpacing: 1.2,
+    textTransform: "uppercase",
+  },
+  switchGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(2, minmax(0, 1fr))",
+    gap: 8,
+  },
+  switchItem: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    padding: "9px 10px",
+    borderRadius: 10,
+    background: "rgba(15,23,42,.72)",
+    border: "1px solid rgba(255,255,255,.08)",
+    color: "#cbd5e1",
+    fontSize: 12,
+  },
   emptyToken: {
     opacity: 0.72,
     borderStyle: "dashed",
@@ -828,5 +1092,95 @@ const S = {
     marginBottom: 14,
     color: "#94a3b8",
     textAlign: "center",
+  },
+  vlogCaptainRow: {
+    display: "grid",
+    gridTemplateColumns: "1fr auto 1fr",
+    gap: 10,
+    alignItems: "stretch",
+    margin: "12px 0 14px",
+  },
+  vlogFormation: {
+    minWidth: 96,
+    padding: "12px 14px",
+    borderRadius: 14,
+    background: "#facc15",
+    color: "#07111f",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 900,
+    fontSize: 18,
+  },
+  captainCard: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 12px",
+    borderRadius: 14,
+    background: "#0f1a2b",
+    border: "1px solid rgba(255,255,255,.1)",
+    color: "#ffffff",
+    minWidth: 0,
+  },
+  captainPill: {
+    width: 34,
+    height: 34,
+    borderRadius: "50%",
+    background: "#facc15",
+    color: "#111827",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 900,
+    flexShrink: 0,
+  },
+  vicePill: {
+    width: 42,
+    height: 34,
+    borderRadius: 999,
+    background: "#38bdf8",
+    color: "#082f49",
+    display: "grid",
+    placeItems: "center",
+    fontWeight: 900,
+    flexShrink: 0,
+  },
+  captainLabel: {
+    color: "#94a3b8",
+    fontSize: 10,
+    fontWeight: 900,
+    textTransform: "uppercase",
+    letterSpacing: 1,
+  },
+  captainFixture: {
+    display: "block",
+    marginTop: 2,
+    color: "#cbd5e1",
+    fontSize: 11,
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  squadStrip: {
+    marginTop: 14,
+    padding: 12,
+    borderRadius: 14,
+    background: "#0b1626",
+    border: "1px solid rgba(255,255,255,.08)",
+  },
+  squadGrid: {
+    display: "grid",
+    gridTemplateColumns: "repeat(3, minmax(0, 1fr))",
+    gap: 8,
+  },
+  squadChip: {
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    padding: "8px 10px",
+    borderRadius: 10,
+    background: "#101b2d",
+    border: "1px solid rgba(255,255,255,.08)",
+    color: "#ffffff",
+    fontSize: 12,
   },
 };
