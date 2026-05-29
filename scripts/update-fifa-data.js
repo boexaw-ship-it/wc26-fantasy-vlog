@@ -104,13 +104,33 @@ async function renderFifaPage() {
   });
 
   await clickIfVisible(page, /accept|agree|aceptar|allow all|confirm|confirmar/i);
-  await page.waitForTimeout(12_000);
-  await autoScroll(page);
+  await page.waitForTimeout(10_000);
 
-  const text = await page.locator("body").innerText({ timeout: 30_000 });
+  const allTexts = [];
+
+  const positionTabs = [
+    /^(GK|GKP|POR|ARQ|Goalkeepers?|Porteros?|Arqueros?)$/i,
+    /^(DEF|DF|Defenders?|Defensas?)$/i,
+    /^(MID|MED|CEN|Midfielders?|Centrocampistas?|Mediocampistas?)$/i,
+    /^(FWD|DEL|ATT|Forwards?|Delanteros?|Atacantes?)$/i,
+  ];
+
+  for (const tabPattern of positionTabs) {
+    await clickMatchingButton(page, tabPattern);
+    await page.waitForTimeout(3_000);
+    await autoScroll(page);
+
+    const text = await page.locator("body").innerText({ timeout: 30_000 });
+    allTexts.push(text);
+  }
+
+  if (allTexts.length === 0) {
+    allTexts.push(await page.locator("body").innerText({ timeout: 30_000 }));
+  }
+
   await browser.close();
 
-  return text;
+  return allTexts.join("\n\n--- POSITION BREAK ---\n\n");
 }
 
 async function clickIfVisible(page, labelPattern) {
@@ -122,21 +142,46 @@ async function clickIfVisible(page, labelPattern) {
     const text = await button.innerText().catch(() => "");
     if (labelPattern.test(text)) {
       await button.click().catch(() => {});
-      return;
+      return true;
     }
   }
+
+  return false;
+}
+
+async function clickMatchingButton(page, labelPattern) {
+  const buttons = page.getByRole("button");
+  const count = await buttons.count().catch(() => 0);
+
+  for (let index = 0; index < count; index += 1) {
+    const button = buttons.nth(index);
+    const text = (await button.innerText().catch(() => "")).trim();
+
+    if (labelPattern.test(text)) {
+      await button.click().catch(() => {});
+      return true;
+    }
+  }
+
+  return false;
 }
 
 async function autoScroll(page) {
   await page.evaluate(async () => {
     await new Promise((resolve) => {
-      let totalHeight = 0;
-      const distance = 800;
+      let rounds = 0;
       const timer = setInterval(() => {
-        window.scrollBy(0, distance);
-        totalHeight += distance;
+        window.scrollBy(0, 700);
 
-        if (totalHeight >= document.body.scrollHeight - window.innerHeight) {
+        document.querySelectorAll("*").forEach((el) => {
+          if (el.scrollHeight > el.clientHeight + 200) {
+            el.scrollTop += 700;
+          }
+        });
+
+        rounds += 1;
+
+        if (rounds >= 16) {
           clearInterval(timer);
           resolve();
         }
