@@ -1,8 +1,10 @@
 {
   "source": "https://play.fifa.com/fantasy/es/team",
-  "updatedAt": "2026-05-29T12:14:31.250Z",
+  "updatedAt": "2026-05-29T12:30:28.997Z",
+  "parsedPlayers": 21,
+  "parsedFixtures": 24,
   "totalPlayers": 21,
   "totalFixtures": 24,
   "totalGroups": 12,
-  "note": "Official FIFA Fantasy page rendered with Playwright and normalized for the vlog app."
+  "note": "Official FIFA Fantasy page rendered with Playwright. Debug text is saved to fifa-debug.txt."
 }
