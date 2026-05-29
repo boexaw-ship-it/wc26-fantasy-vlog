@@ -1,4 +1,4 @@
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, writeFile, readFile } from "node:fs/promises";
 
 const FIFA_FANTASY_URL =
   process.env.FIFA_FANTASY_URL || "https://play.fifa.com/fantasy/es/team";
@@ -50,7 +50,7 @@ function normalizeName(value) {
 }
 
 function makeId(name, teamCode) {
-  return `${normalizeName(name).replace(/\s+/g, "-")}-${teamCode.toLowerCase()}`;
+  return `${normalizeName(name).replace(/\s+/g, "-")}-${String(teamCode || "unk").toLowerCase()}`;
 }
 
 function parsePrice(value) {
@@ -81,7 +81,7 @@ function codeFromTeamName(name) {
 }
 
 function teamNameFromCode(code) {
-  return teamNamesByCode[code] || code;
+  return teamNamesByCode[code] || code || "Unknown";
 }
 
 async function renderFifaPage() {
@@ -104,17 +104,11 @@ async function renderFifaPage() {
   });
 
   await clickIfVisible(page, /accept|agree|aceptar|allow all|confirm|confirmar/i);
-
   await page.waitForTimeout(12_000);
-
   await autoScroll(page);
 
   const text = await page.locator("body").innerText({ timeout: 30_000 });
   await browser.close();
-
-  if (!/player|jugador|lista de jugadores|fixtures|partidos/i.test(text)) {
-    throw new Error("FIFA Fantasy page rendered, but no fantasy data was visible.");
-  }
 
   return text;
 }
@@ -204,7 +198,7 @@ function inferPlayerTeamCode(name, homeCode, awayCode) {
   if (normalizedName.includes(homeName)) return homeCode;
   if (normalizedName.includes(awayName)) return awayCode;
 
-  return [homeCode, awayCode].find((code) => teamNamesByCode[code]) || homeCode;
+  return [homeCode, awayCode].find((code) => teamNamesByCode[code]) || homeCode || awayCode || "UNK";
 }
 
 function parseFixtures(text) {
@@ -309,36 +303,54 @@ function isIgnoredLine(line) {
   );
 }
 
+async function readExistingJson(fileName, fallbackValue) {
+  try {
+    const text = await readFile(new URL(fileName, dataDir), "utf8");
+    return JSON.parse(text);
+  } catch {
+    return fallbackValue;
+  }
+}
+
 async function writeJson(fileName, value) {
   await writeFile(new URL(fileName, dataDir), `${JSON.stringify(value, null, 2)}\n`);
 }
 
+await mkdir(dataDir, { recursive: true });
+
 const renderedText = await renderFifaPage();
-const players = parsePlayers(renderedText);
-const fixtures = parseFixtures(renderedText);
+await writeFile(new URL("fifa-debug.txt", dataDir), renderedText);
+
+const parsedPlayers = parsePlayers(renderedText);
+const parsedFixtures = parseFixtures(renderedText);
+
+const oldPlayers = await readExistingJson("fifa-players.json", []);
+const oldFixtures = await readExistingJson("fifa-fixtures.json", []);
+
+const players = parsedPlayers.length >= 20 ? parsedPlayers : oldPlayers;
+const fixtures = parsedFixtures.length >= 20 ? parsedFixtures : oldFixtures;
 const groups = buildGroups(fixtures);
 const teams = groups.flatMap((group) =>
   group.teams.map((team) => ({ ...team, group: group.group }))
 );
 
-if (players.length < 20) {
-  throw new Error(`Only ${players.length} players parsed from FIFA. Page layout may have changed.`);
-}
-
-if (fixtures.length < 20) {
-  throw new Error(`Only ${fixtures.length} fixtures parsed from FIFA. Page layout may have changed.`);
+if (parsedPlayers.length < 20 || parsedFixtures.length < 20) {
+  console.warn(
+    `Parse warning: players=${parsedPlayers.length}, fixtures=${parsedFixtures.length}. Kept previous JSON where parsing was incomplete. Check public/data/fifa-debug.txt`
+  );
 }
 
 const lastUpdated = {
   source: FIFA_FANTASY_URL,
   updatedAt: new Date().toISOString(),
+  parsedPlayers: parsedPlayers.length,
+  parsedFixtures: parsedFixtures.length,
   totalPlayers: players.length,
   totalFixtures: fixtures.length,
   totalGroups: groups.length,
-  note: "Official FIFA Fantasy page rendered with Playwright and normalized for the vlog app.",
+  note: "Official FIFA Fantasy page rendered with Playwright. Debug text is saved to fifa-debug.txt.",
 };
 
-await mkdir(dataDir, { recursive: true });
 await writeJson("fifa-players.json", players);
 await writeJson("fifa-fixtures.json", fixtures);
 await writeJson("fifa-teams.json", teams);
@@ -346,6 +358,8 @@ await writeJson("fifa-groups.json", groups);
 await writeJson("last-updated.json", lastUpdated);
 
 console.log(`Updated FIFA fantasy cache at ${lastUpdated.updatedAt}`);
-console.log(`Players : ${players.length}`);
-console.log(`Fixtures: ${fixtures.length}`);
-console.log(`Groups  : ${groups.length}`);
+console.log(`Parsed players : ${parsedPlayers.length}`);
+console.log(`Parsed fixtures: ${parsedFixtures.length}`);
+console.log(`Saved players  : ${players.length}`);
+console.log(`Saved fixtures : ${fixtures.length}`);
+console.log("Debug text written to public/data/fifa-debug.txt");
