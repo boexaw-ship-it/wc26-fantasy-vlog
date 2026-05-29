@@ -60,18 +60,6 @@
     "nextFixture": "FRA vs ARG"
   },
   {
-    "id": "oblak",
-    "name": "Oblak",
-    "fullName": "Jan Oblak",
-    "team": "Slovenia",
-    "teamCode": "SVN",
-    "position": "GK",
-    "price": 5,
-    "points": 0,
-    "jerseyNumber": 1,
-    "nextFixture": "SVN vs TBD"
-  },
-  {
     "id": "martinez_e",
     "name": "E. Martínez",
     "fullName": "Emiliano Martínez",
@@ -106,18 +94,6 @@
     "points": 0,
     "jerseyNumber": 1,
     "nextFixture": "POR vs MAR"
-  },
-  {
-    "id": "lloris",
-    "name": "Lloris",
-    "fullName": "Hugo Lloris",
-    "team": "France",
-    "teamCode": "FRA",
-    "position": "GK",
-    "price": 5,
-    "points": 0,
-    "jerseyNumber": 1,
-    "nextFixture": "FRA vs ARG"
   },
   {
     "id": "ruben",
@@ -192,7 +168,7 @@
     "nextFixture": "ENG vs TUN"
   },
   {
-    "id": "dani_carvajal",
+    "id": "carvajal",
     "name": "Carvajal",
     "fullName": "Dani Carvajal",
     "team": "Spain",
@@ -226,18 +202,6 @@
     "points": 0,
     "jerseyNumber": 4,
     "nextFixture": "GER vs ESP"
-  },
-  {
-    "id": "acuna",
-    "name": "Acuña",
-    "fullName": "Marcos Acuña",
-    "team": "Argentina",
-    "teamCode": "ARG",
-    "position": "DEF",
-    "price": 6,
-    "points": 0,
-    "jerseyNumber": 8,
-    "nextFixture": "ARG vs FRA"
   },
   {
     "id": "romero",
@@ -276,30 +240,6 @@
     "nextFixture": "ENG vs TUN"
   },
   {
-    "id": "mendy",
-    "name": "Mendy",
-    "fullName": "Ferland Mendy",
-    "team": "France",
-    "teamCode": "FRA",
-    "position": "DEF",
-    "price": 6,
-    "points": 0,
-    "jerseyNumber": 23,
-    "nextFixture": "FRA vs ARG"
-  },
-  {
-    "id": "laporte",
-    "name": "Laporte",
-    "fullName": "Aymeric Laporte",
-    "team": "Spain",
-    "teamCode": "ESP",
-    "position": "DEF",
-    "price": 6,
-    "points": 0,
-    "jerseyNumber": 14,
-    "nextFixture": "ESP vs GER"
-  },
-  {
     "id": "nuno_mendes",
     "name": "Nuno M.",
     "fullName": "Nuno Mendes",
@@ -324,18 +264,6 @@
     "nextFixture": "MAR vs POR"
   },
   {
-    "id": "jesus_vallejo",
-    "name": "Vallejo",
-    "fullName": "Jesús Vallejo",
-    "team": "Spain",
-    "teamCode": "ESP",
-    "position": "DEF",
-    "price": 5,
-    "points": 0,
-    "jerseyNumber": 16,
-    "nextFixture": "ESP vs GER"
-  },
-  {
     "id": "wan_bissaka",
     "name": "Wan-Bissaka",
     "fullName": "Aaron Wan-Bissaka",
@@ -348,16 +276,16 @@
     "nextFixture": "ENG vs TUN"
   },
   {
-    "id": "ogwuche",
-    "name": "Troost-Ekong",
-    "fullName": "William Troost-Ekong",
-    "team": "Nigeria",
-    "teamCode": "NGA",
+    "id": "laporte",
+    "name": "Laporte",
+    "fullName": "Aymeric Laporte",
+    "team": "Spain",
+    "teamCode": "ESP",
     "position": "DEF",
-    "price": 5.5,
+    "price": 6,
     "points": 0,
-    "jerseyNumber": 5,
-    "nextFixture": "NGA vs TBD"
+    "jerseyNumber": 14,
+    "nextFixture": "ESP vs GER"
   },
   {
     "id": "bellingham",
@@ -405,19 +333,19 @@
     "price": 7.5,
     "points": 0,
     "jerseyNumber": 8,
-    "nextFixture": "URU vs TBD"
+    "nextFixture": "URU vs ECU"
   },
   {
     "id": "modric",
     "name": "Modrić",
     "fullName": "Luka Modrić",
-    "teamCode": "CRO",
     "team": "Croatia",
+    "teamCode": "CRO",
     "position": "MID",
     "price": 7,
     "points": 0,
     "jerseyNumber": 10,
-    "nextFixture": "CRO vs TBD"
+    "nextFixture": "CRO vs BEL"
   },
   {
     "id": "camavinga",
@@ -552,18 +480,6 @@
     "nextFixture": "ARG vs FRA"
   },
   {
-    "id": "zielinski",
-    "name": "Zieliński",
-    "fullName": "Piotr Zieliński",
-    "team": "Poland",
-    "teamCode": "POL",
-    "position": "MID",
-    "price": 6.5,
-    "points": 0,
-    "jerseyNumber": 10,
-    "nextFixture": "POL vs TBD"
-  },
-  {
     "id": "caicedo",
     "name": "Caicedo",
     "fullName": "Moisés Caicedo",
@@ -573,7 +489,7 @@
     "price": 7,
     "points": 0,
     "jerseyNumber": 10,
-    "nextFixture": "ECU vs TBD"
+    "nextFixture": "ECU vs URU"
   },
   {
     "id": "amrabat",
@@ -586,18 +502,6 @@
     "points": 0,
     "jerseyNumber": 4,
     "nextFixture": "MAR vs POR"
-  },
-  {
-    "id": "sabitzer",
-    "name": "Sabitzer",
-    "fullName": "Marcel Sabitzer",
-    "team": "Austria",
-    "teamCode": "AUT",
-    "position": "MID",
-    "price": 6.5,
-    "points": 0,
-    "jerseyNumber": 8,
-    "nextFixture": "AUT vs TBD"
   },
   {
     "id": "mbappe",
@@ -669,7 +573,7 @@
     "price": 8.5,
     "points": 0,
     "jerseyNumber": 9,
-    "nextFixture": "NGA vs TBD"
+    "nextFixture": "NGA vs POL"
   },
   {
     "id": "lewandowski",
@@ -681,7 +585,7 @@
     "price": 9,
     "points": 0,
     "jerseyNumber": 9,
-    "nextFixture": "POL vs TBD"
+    "nextFixture": "POL vs NGA"
   },
   {
     "id": "alvarez",
@@ -717,18 +621,6 @@
     "price": 9,
     "points": 0,
     "jerseyNumber": 10,
-    "nextFixture": "BRA vs MEX"
-  },
-  {
-    "id": "firmino",
-    "name": "Firmino",
-    "fullName": "Roberto Firmino",
-    "team": "Brazil",
-    "teamCode": "BRA",
-    "position": "FWD",
-    "price": 7.5,
-    "points": 0,
-    "jerseyNumber": 20,
     "nextFixture": "BRA vs MEX"
   },
   {
@@ -801,19 +693,7 @@
     "price": 8.5,
     "points": 0,
     "jerseyNumber": 9,
-    "nextFixture": "URU vs TBD"
-  },
-  {
-    "id": "diallo",
-    "name": "Diallo",
-    "fullName": "Lamine Diallo",
-    "team": "Senegal",
-    "teamCode": "SEN",
-    "position": "FWD",
-    "price": 7,
-    "points": 0,
-    "jerseyNumber": 11,
-    "nextFixture": "SEN vs NED"
+    "nextFixture": "URU vs ECU"
   },
   {
     "id": "lautaro",
@@ -837,6 +717,6 @@
     "price": 8,
     "points": 0,
     "jerseyNumber": 7,
-    "nextFixture": "COL vs TBD"
+    "nextFixture": "COL vs KSA"
   }
 ]

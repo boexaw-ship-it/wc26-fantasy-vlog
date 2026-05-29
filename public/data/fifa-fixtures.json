@@ -220,6 +220,61 @@
     "status": "scheduled"
   },
   {
+    "id": "m021",
+    "stage": "Group Stage",
+    "group": "D",
+    "date": "2026-06-22",
+    "time": "16:00",
+    "homeTeam": "Portugal",
+    "awayTeam": "Belgium",
+    "venue": "Lincoln Financial, Philadelphia",
+    "status": "scheduled"
+  },
+  {
+    "id": "m022",
+    "stage": "Group Stage",
+    "group": "D",
+    "date": "2026-06-23",
+    "time": "13:00",
+    "homeTeam": "Morocco",
+    "awayTeam": "Croatia",
+    "venue": "Lumen Field, Seattle",
+    "status": "scheduled"
+  },
+  {
+    "id": "m023",
+    "stage": "Group Stage",
+    "group": "E",
+    "date": "2026-06-23",
+    "time": "16:00",
+    "homeTeam": "Netherlands",
+    "awayTeam": "Ecuador",
+    "venue": "Gillette Stadium, Boston",
+    "status": "scheduled"
+  },
+  {
+    "id": "m024",
+    "stage": "Group Stage",
+    "group": "E",
+    "date": "2026-06-24",
+    "time": "13:00",
+    "homeTeam": "Senegal",
+    "awayTeam": "Uruguay",
+    "venue": "Hard Rock Stadium, Miami",
+    "status": "scheduled"
+  },
+  {
+    "id": "m025",
+    "stage": "Group Stage",
+    "group": "F",
+    "date": "2026-06-24",
+    "time": "16:00",
+    "homeTeam": "Japan",
+    "awayTeam": "Nigeria",
+    "venue": "Estadio BBVA, Monterrey",
+    "status": "scheduled"
+  },
+  {
     "id": "r32a",
     "stage": "Round of 32",
     "date": "2026-06-27",
@@ -250,6 +305,16 @@
     "status": "tbd"
   },
   {
+    "id": "r32d",
+    "stage": "Round of 32",
+    "date": "2026-06-30",
+    "time": "TBD",
+    "homeTeam": "TBD",
+    "awayTeam": "TBD",
+    "venue": "TBD",
+    "status": "tbd"
+  },
+  {
     "id": "r16a",
     "stage": "Round of 16",
     "date": "2026-07-04",
@@ -263,6 +328,26 @@
     "id": "r16b",
     "stage": "Round of 16",
     "date": "2026-07-05",
+    "time": "TBD",
+    "homeTeam": "TBD",
+    "awayTeam": "TBD",
+    "venue": "TBD",
+    "status": "tbd"
+  },
+  {
+    "id": "r16c",
+    "stage": "Round of 16",
+    "date": "2026-07-06",
+    "time": "TBD",
+    "homeTeam": "TBD",
+    "awayTeam": "TBD",
+    "venue": "TBD",
+    "status": "tbd"
+  },
+  {
+    "id": "r16d",
+    "stage": "Round of 16",
+    "date": "2026-07-07",
     "time": "TBD",
     "homeTeam": "TBD",
     "awayTeam": "TBD",

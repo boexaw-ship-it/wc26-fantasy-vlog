@@ -1,8 +1,8 @@
 {
-  "source": "WC2026 Static Data (manually curated)",
-  "updatedAt": "2026-05-29T05:17:30.974Z",
-  "totalPlayers": 70,
-  "totalFixtures": 33,
-  "totalGroups": 12,
-  "note": "Data manually curated from official WC2026 announcements. Update when official API becomes available."
+  "source": "WC2026 Manual Curated Data",
+  "updatedAt": "2026-05-29T05:38:55.034Z",
+  "totalPlayers": 60,
+  "totalFixtures": 41,
+  "totalGroups": 8,
+  "note": "Points updated manually from FIFA Fantasy official app after each match week."
 }
