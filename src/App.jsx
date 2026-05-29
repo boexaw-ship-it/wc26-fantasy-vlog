@@ -656,7 +656,23 @@ function PlayerRow({
   const addDisabled = !selected && squadFull;
 
   return (
-    <article style={{ ...S.playerRow, ...(selected ? S.selectedRow : {}) }}>
+    <article
+      style={{
+        ...S.playerRow,
+        ...(selected ? S.selectedRow : {}),
+        ...(!selected && squadFull ? S.playerRowDisabled : {}),
+      }}
+      onClick={() => {
+        if (!addDisabled) onToggle();
+      }}
+      title={
+        selected
+          ? "Click to remove from squad"
+          : addDisabled
+            ? "Squad is full"
+            : "Click to add to squad"
+      }
+    >
       <Jersey
         primary={primary}
         secondary={secondary}
@@ -671,7 +687,7 @@ function PlayerRow({
         </span>
       </div>
       <div style={S.rowPrice}>${Number(player.price || 0).toFixed(1)}m</div>
-      <div style={S.rowActions}>
+      <div style={S.rowActions} onClick={(event) => event.stopPropagation()}>
         <button
           type="button"
           style={{
@@ -1141,10 +1157,16 @@ const S = {
     borderRadius: 12,
     background: "#0f1a2b",
     border: "1px solid rgba(255,255,255,.08)",
+    cursor: "pointer",
+    transition: "border-color .18s, background .18s, transform .18s",
   },
   selectedRow: {
     borderColor: "rgba(74,222,128,.55)",
     background: "rgba(22,101,52,.28)",
+  },
+  playerRowDisabled: {
+    opacity: 0.55,
+    cursor: "not-allowed",
   },
   rowMain: {
     flex: 1,
