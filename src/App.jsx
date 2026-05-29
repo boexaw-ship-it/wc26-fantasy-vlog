@@ -1,677 +1,832 @@
-import { useState, useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const FORMATIONS = {
-  "4-3-3":  { DEF:4, MID:3, FWD:3 },
-  "4-4-2":  { DEF:4, MID:4, FWD:2 },
-  "4-5-1":  { DEF:4, MID:5, FWD:1 },
-  "3-4-3":  { DEF:3, MID:4, FWD:3 },
-  "3-5-2":  { DEF:3, MID:5, FWD:2 },
-  "5-3-2":  { DEF:5, MID:3, FWD:2 },
-  "5-4-1":  { DEF:5, MID:4, FWD:1 },
-  "4-2-3-1":{ DEF:4, MID:5, FWD:2 },
+  "3-4-3": { DEF: 3, MID: 4, FWD: 3 },
+  "3-5-2": { DEF: 3, MID: 5, FWD: 2 },
+  "4-3-3": { DEF: 4, MID: 3, FWD: 3 },
+  "4-4-2": { DEF: 4, MID: 4, FWD: 2 },
+  "4-5-1": { DEF: 4, MID: 5, FWD: 1 },
+  "5-3-2": { DEF: 5, MID: 3, FWD: 2 },
+  "5-4-1": { DEF: 5, MID: 4, FWD: 1 },
 };
 
-const POS_ORDER = ["FWD","MID","DEF","GK"];
-const SUB_SLOTS = ["SUB-0","SUB-1","SUB-2","SUB-3"];
+const TABS = ["My Team", "Players", "Fixtures", "Vlog Mode"];
+const POSITION_ROWS = ["FWD", "MID", "DEF", "GK"];
 
-// Team jersey colors [primary, secondary]
 const TEAM_COLORS = {
-  FRA:["#003189","#fff"], ARG:["#75aadb","#fff"], BRA:["#f7e000","#009c3b"],
-  ENG:["#fff","#cf081f"], NOR:["#ef2b2d","#fff"], EGY:["#c8102e","#fff"],
-  NGA:["#008751","#fff"], ESP:["#c60b1e","#ffc400"], NED:["#f36c21","#fff"],
-  URU:["#75aadb","#fff"], CRO:["#ff0000","#fff"], MAR:["#c1272d","#006233"],
-  POR:["#006600","#ff0000"], BEL:["#000","#f50000"], GER:["#fff","#000"],
-  DEFAULT:["#374151","#9ca3af"],
+  ARG: ["#75aadb", "#ffffff"],
+  BEL: ["#111111", "#ef3340"],
+  BRA: ["#f7e017", "#009c3b"],
+  ENG: ["#ffffff", "#cf142b"],
+  ESP: ["#c60b1e", "#ffc400"],
+  FRA: ["#003189", "#ffffff"],
+  GER: ["#ffffff", "#111111"],
+  MAR: ["#c1272d", "#006233"],
+  NED: ["#f36c21", "#ffffff"],
+  POR: ["#006600", "#ff0000"],
+  URU: ["#75aadb", "#ffffff"],
+  DEFAULT: ["#334155", "#cbd5e1"],
 };
 
-const getTeamColors = code => TEAM_COLORS[code] || TEAM_COLORS.DEFAULT;
+function getTeamColors(code) {
+  return TEAM_COLORS[code] || TEAM_COLORS.DEFAULT;
+}
 
-const SAMPLE_PLAYERS = [
-  { id:"mbappe",     name:"Mbappé",        fullName:"Kylian Mbappé",        teamCode:"FRA", position:"FWD", price:11.5, jerseyNumber:10, nextFixture:"v ARG" },
-  { id:"messi",      name:"Messi",         fullName:"Lionel Messi",          teamCode:"ARG", position:"FWD", price:10.5, jerseyNumber:10, nextFixture:"v FRA" },
-  { id:"vinicius",   name:"Vinícius",      fullName:"Vinicius Jr.",           teamCode:"BRA", position:"FWD", price:10.0, jerseyNumber:7,  nextFixture:"v ENG" },
-  { id:"haaland",    name:"Haaland",       fullName:"Erling Haaland",         teamCode:"NOR", position:"FWD", price:11.0, jerseyNumber:9,  nextFixture:"v EGY" },
-  { id:"salah",      name:"Salah",         fullName:"Mohamed Salah",          teamCode:"EGY", position:"FWD", price:9.0,  jerseyNumber:11, nextFixture:"v NOR" },
-  { id:"osimhen",    name:"Osimhen",       fullName:"Victor Osimhen",         teamCode:"NGA", position:"FWD", price:8.5,  jerseyNumber:9,  nextFixture:"v MAR" },
-  { id:"bellingham", name:"Bellingham",    fullName:"Jude Bellingham",        teamCode:"ENG", position:"MID", price:9.5,  jerseyNumber:10, nextFixture:"v BRA" },
-  { id:"pedri",      name:"Pedri",         fullName:"Pedri",                  teamCode:"ESP", position:"MID", price:8.5,  jerseyNumber:8,  nextFixture:"v GER" },
-  { id:"dejong",     name:"De Jong",       fullName:"Frenkie de Jong",        teamCode:"NED", position:"MID", price:8.0,  jerseyNumber:7,  nextFixture:"v URU" },
-  { id:"valverde",   name:"Valverde",      fullName:"Fed. Valverde",          teamCode:"URU", position:"MID", price:7.5,  jerseyNumber:8,  nextFixture:"v NED" },
-  { id:"modric",     name:"Modrić",        fullName:"Luka Modrić",            teamCode:"CRO", position:"MID", price:7.0,  jerseyNumber:10, nextFixture:"v BEL" },
-  { id:"camavinga",  name:"Camavinga",     fullName:"E. Camavinga",           teamCode:"FRA", position:"MID", price:7.0,  jerseyNumber:29, nextFixture:"v ARG" },
-  { id:"ruben",      name:"R. Dias",       fullName:"Rúben Dias",              teamCode:"POR", position:"DEF", price:7.0,  jerseyNumber:4,  nextFixture:"v MAR" },
-  { id:"hakimi",     name:"Hakimi",        fullName:"Achraf Hakimi",           teamCode:"MAR", position:"DEF", price:7.5,  jerseyNumber:2,  nextFixture:"v POR" },
-  { id:"cancelo",    name:"Cancelo",       fullName:"João Cancelo",            teamCode:"POR", position:"DEF", price:7.0,  jerseyNumber:20, nextFixture:"v MAR" },
-  { id:"militao",    name:"Militão",       fullName:"Éder Militão",            teamCode:"BRA", position:"DEF", price:6.5,  jerseyNumber:3,  nextFixture:"v ENG" },
-  { id:"kounde",     name:"Koundé",        fullName:"Jules Koundé",            teamCode:"FRA", position:"DEF", price:6.5,  jerseyNumber:5,  nextFixture:"v ARG" },
-  { id:"trent",      name:"Alexander-A.", fullName:"Trent A-Arnold",          teamCode:"ENG", position:"DEF", price:7.5,  jerseyNumber:66, nextFixture:"v BRA" },
-  { id:"alisson",    name:"Alisson",       fullName:"Alisson Becker",          teamCode:"BRA", position:"GK",  price:6.0,  jerseyNumber:1,  nextFixture:"v ENG" },
-  { id:"ederson",    name:"Ederson",       fullName:"Ederson",                 teamCode:"BRA", position:"GK",  price:5.5,  jerseyNumber:31, nextFixture:"v ENG" },
-  { id:"courtois",   name:"Courtois",      fullName:"T. Courtois",             teamCode:"BEL", position:"GK",  price:6.0,  jerseyNumber:1,  nextFixture:"v CRO" },
-  { id:"pickford",   name:"Pickford",      fullName:"Jordan Pickford",         teamCode:"ENG", position:"GK",  price:5.0,  jerseyNumber:1,  nextFixture:"v BRA" },
-];
+function emptyTeam() {
+  return {
+    teamName: "My WC26 Vlog XI",
+    formation: "3-4-3",
+    budget: 100,
+    captain: "",
+    viceCaptain: "",
+    players: [],
+  };
+}
 
-const SAMPLE_FIXTURES = [
-  { id:"m1", stage:"Group Stage",   date:"2026-06-11", homeTeam:"Mexico",  awayTeam:"USA",       venue:"SoFi Stadium", status:"scheduled" },
-  { id:"m2", stage:"Group Stage",   date:"2026-06-12", homeTeam:"France",  awayTeam:"Argentina", venue:"MetLife",      status:"scheduled" },
-  { id:"m3", stage:"Group Stage",   date:"2026-06-13", homeTeam:"Brazil",  awayTeam:"England",   venue:"AT&T Stadium", status:"scheduled" },
-  { id:"m4", stage:"Group Stage",   date:"2026-06-14", homeTeam:"Spain",   awayTeam:"Germany",   venue:"Rose Bowl",    status:"scheduled" },
-  { id:"m5", stage:"Group Stage",   date:"2026-06-15", homeTeam:"Morocco", awayTeam:"Portugal",  venue:"Lincoln FR",   status:"scheduled" },
-  { id:"m6", stage:"Quarter-Final", date:"2026-07-03", homeTeam:"TBD",     awayTeam:"TBD",       venue:"TBD",          status:"tbd" },
-  { id:"m7", stage:"Semi-Final",    date:"2026-07-14", homeTeam:"TBD",     awayTeam:"TBD",       venue:"TBD",          status:"tbd" },
-  { id:"m8", stage:"Final",         date:"2026-07-19", homeTeam:"TBD",     awayTeam:"TBD",       venue:"MetLife",      status:"tbd" },
-];
+export default function App() {
+  const [tab, setTab] = useState("My Team");
+  const [players, setPlayers] = useState([]);
+  const [fixtures, setFixtures] = useState([]);
+  const [myTeam, setMyTeam] = useState(emptyTeam());
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [positionFilter, setPositionFilter] = useState("All");
+  const [search, setSearch] = useState("");
 
-const TABS = ["My Team","Players","Fixtures","Vlog Mode"];
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [playersRes, fixturesRes, teamRes] = await Promise.all([
+          fetch("./data/fifa-players.json"),
+          fetch("./data/fifa-fixtures.json"),
+          fetch("./data/my-team.json"),
+        ]);
 
-// ── Jersey SVG component ──────────────────────────────────────────────────────
-function Jersey({ primary, secondary, number, size = 52 }) {
+        if (!playersRes.ok || !fixturesRes.ok || !teamRes.ok) {
+          throw new Error("Data files could not be loaded.");
+        }
+
+        setPlayers(await playersRes.json());
+        setFixtures(await fixturesRes.json());
+        setMyTeam({ ...emptyTeam(), ...(await teamRes.json()) });
+      } catch (err) {
+        setError(err.message || "Something went wrong.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
+  }, []);
+
+  const selectedPlayers = useMemo(() => {
+    const ids = myTeam.players || [];
+    return ids
+      .map((id) => players.find((player) => player.id === id))
+      .filter(Boolean);
+  }, [myTeam.players, players]);
+
+  const totalCost = selectedPlayers.reduce(
+    (sum, player) => sum + Number(player.price || 0),
+    0
+  );
+  const budgetLeft = Number(myTeam.budget || 100) - totalCost;
+  const captain = players.find((player) => player.id === myTeam.captain);
+  const viceCaptain = players.find((player) => player.id === myTeam.viceCaptain);
+
+  if (loading) {
+    return <StatusScreen title="Loading fantasy data..." />;
+  }
+
+  if (error) {
+    return <StatusScreen title="Data load failed" message={error} />;
+  }
+
   return (
-    <svg width={size} height={size * 0.95} viewBox="0 0 100 95" fill="none" xmlns="http://www.w3.org/2000/svg">
-      {/* shirt body */}
-      <path d="M28 18 L10 32 L18 40 L22 36 L22 85 L78 85 L78 36 L82 40 L90 32 L72 18 C68 22 58 26 50 26 C42 26 32 22 28 18Z" fill={primary} stroke="rgba(0,0,0,0.25)" strokeWidth="2"/>
-      {/* collar */}
-      <path d="M38 18 Q50 28 62 18 Q56 12 50 12 Q44 12 38 18Z" fill={secondary} opacity="0.9"/>
-      {/* sleeve stripe */}
-      <path d="M10 32 L18 40 L22 36 L22 46 L10 42Z" fill={secondary} opacity="0.5"/>
-      <path d="M90 32 L82 40 L78 36 L78 46 L90 42Z" fill={secondary} opacity="0.5"/>
-      {/* number */}
-      <text x="50" y="62" textAnchor="middle" fontSize="24" fontWeight="900"
-        fill={secondary} fontFamily="Arial,sans-serif" style={{userSelect:"none"}}>
+    <main style={S.shell}>
+      <header style={S.header}>
+        <div>
+          <div style={S.kicker}>World Cup 2026 Fantasy</div>
+          <h1 style={S.title}>{myTeam.teamName}</h1>
+          <div style={S.subTitle}>
+            {myTeam.formation} formation
+            {captain ? ` | C: ${captain.name}` : ""}
+            {viceCaptain ? ` | VC: ${viceCaptain.name}` : ""}
+          </div>
+        </div>
+
+        <div style={S.budgetBox}>
+          <span style={S.smallMuted}>Budget left</span>
+          <strong style={{ color: budgetLeft < 0 ? "#fb7185" : "#4ade80" }}>
+            ${budgetLeft.toFixed(1)}m
+          </strong>
+          <span style={S.smallMuted}>Used ${totalCost.toFixed(1)}m</span>
+        </div>
+      </header>
+
+      <nav style={S.tabs}>
+        {TABS.map((item) => (
+          <button
+            key={item}
+            type="button"
+            style={{ ...S.tab, ...(tab === item ? S.activeTab : {}) }}
+            onClick={() => setTab(item)}
+          >
+            {item}
+          </button>
+        ))}
+      </nav>
+
+      <section style={S.content}>
+        {tab === "My Team" && (
+          <MyTeam
+            players={selectedPlayers}
+            formation={myTeam.formation}
+            captainId={myTeam.captain}
+            viceCaptainId={myTeam.viceCaptain}
+          />
+        )}
+
+        {tab === "Players" && (
+          <Players
+            players={players}
+            selectedIds={myTeam.players || []}
+            positionFilter={positionFilter}
+            setPositionFilter={setPositionFilter}
+            search={search}
+            setSearch={setSearch}
+          />
+        )}
+
+        {tab === "Fixtures" && <Fixtures fixtures={fixtures} />}
+
+        {tab === "Vlog Mode" && (
+          <VlogMode
+            players={selectedPlayers}
+            formation={myTeam.formation}
+            teamName={myTeam.teamName}
+            captain={captain}
+            viceCaptain={viceCaptain}
+          />
+        )}
+      </section>
+    </main>
+  );
+}
+
+function StatusScreen({ title, message }) {
+  return (
+    <main style={{ ...S.shell, ...S.centerScreen }}>
+      <h1 style={S.title}>{title}</h1>
+      {message && <p style={S.subTitle}>{message}</p>}
+    </main>
+  );
+}
+
+function MyTeam({ players, formation, captainId, viceCaptainId }) {
+  const rows = buildFormationRows(players, formation);
+
+  return (
+    <div style={S.pitchWrap}>
+      <div style={S.pitchHeader}>
+        <div>
+          <div style={S.kicker}>Formation</div>
+          <h2 style={S.sectionTitle}>{formation}</h2>
+        </div>
+        <div style={S.legend}>
+          <span>Price and next fixture are shown on every card.</span>
+        </div>
+      </div>
+
+      <div style={S.pitch}>
+        <PitchLines />
+        {POSITION_ROWS.map((position) => (
+          <div key={position} style={S.pitchRow}>
+            {rows[position].map((player, index) =>
+              player ? (
+                <PlayerToken
+                  key={player.id}
+                  player={player}
+                  captain={player.id === captainId}
+                  viceCaptain={player.id === viceCaptainId}
+                />
+              ) : (
+                <EmptyToken key={`${position}-${index}`} position={position} />
+              )
+            )}
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Players({
+  players,
+  selectedIds,
+  positionFilter,
+  setPositionFilter,
+  search,
+  setSearch,
+}) {
+  const filteredPlayers = players.filter((player) => {
+    const matchesPosition =
+      positionFilter === "All" || player.position === positionFilter;
+    const query = search.trim().toLowerCase();
+    const matchesSearch =
+      !query ||
+      player.name?.toLowerCase().includes(query) ||
+      player.fullName?.toLowerCase().includes(query) ||
+      player.team?.toLowerCase().includes(query) ||
+      player.teamCode?.toLowerCase().includes(query);
+
+    return matchesPosition && matchesSearch;
+  });
+
+  return (
+    <div style={S.page}>
+      <div style={S.toolbar}>
+        <div style={S.filterGroup}>
+          {["All", "GK", "DEF", "MID", "FWD"].map((position) => (
+            <button
+              key={position}
+              type="button"
+              style={{
+                ...S.filterButton,
+                ...(positionFilter === position ? S.filterButtonActive : {}),
+              }}
+              onClick={() => setPositionFilter(position)}
+            >
+              {position}
+            </button>
+          ))}
+        </div>
+        <input
+          style={S.search}
+          value={search}
+          onChange={(event) => setSearch(event.target.value)}
+          placeholder="Search player, country, code..."
+        />
+      </div>
+
+      <div style={S.playerList}>
+        {filteredPlayers.map((player) => (
+          <PlayerRow
+            key={player.id}
+            player={player}
+            selected={selectedIds.includes(player.id)}
+          />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+function Fixtures({ fixtures }) {
+  const stages = [...new Set(fixtures.map((fixture) => fixture.stage))];
+
+  return (
+    <div style={S.page}>
+      {stages.map((stage) => (
+        <section key={stage} style={S.stageBlock}>
+          <h2 style={S.stageTitle}>{stage}</h2>
+          <div style={S.fixtureList}>
+            {fixtures
+              .filter((fixture) => fixture.stage === stage)
+              .map((fixture) => (
+                <article key={fixture.id} style={S.fixtureCard}>
+                  <div style={S.fixtureDate}>
+                    <strong>{fixture.date}</strong>
+                    <span>{fixture.time || "TBD"}</span>
+                  </div>
+                  <div style={S.fixtureTeams}>
+                    <span>{fixture.homeTeam}</span>
+                    <b>VS</b>
+                    <span>{fixture.awayTeam}</span>
+                  </div>
+                  <div style={S.fixtureVenue}>{fixture.venue}</div>
+                  <div style={S.status}>{fixture.status}</div>
+                </article>
+              ))}
+          </div>
+        </section>
+      ))}
+    </div>
+  );
+}
+
+function VlogMode({ players, formation, teamName, captain, viceCaptain }) {
+  return (
+    <div style={S.vlog}>
+      <div style={S.rec}>REC | VLOG MODE</div>
+      <h2 style={S.vlogTitle}>{teamName}</h2>
+      <p style={S.vlogMeta}>
+        {formation}
+        {captain ? ` | Captain: ${captain.name}` : ""}
+        {viceCaptain ? ` | Vice: ${viceCaptain.name}` : ""}
+      </p>
+      <MyTeam
+        players={players}
+        formation={formation}
+        captainId={captain?.id}
+        viceCaptainId={viceCaptain?.id}
+      />
+    </div>
+  );
+}
+
+function buildFormationRows(players, formation) {
+  const shape = FORMATIONS[formation] || FORMATIONS["3-4-3"];
+  const byPosition = {
+    GK: players.filter((player) => player.position === "GK"),
+    DEF: players.filter((player) => player.position === "DEF"),
+    MID: players.filter((player) => player.position === "MID"),
+    FWD: players.filter((player) => player.position === "FWD"),
+  };
+
+  return {
+    FWD: fillSlots(byPosition.FWD, shape.FWD),
+    MID: fillSlots(byPosition.MID, shape.MID),
+    DEF: fillSlots(byPosition.DEF, shape.DEF),
+    GK: fillSlots(byPosition.GK, 1),
+  };
+}
+
+function fillSlots(items, length) {
+  return Array.from({ length }, (_, index) => items[index] || null);
+}
+
+function PlayerToken({ player, captain, viceCaptain }) {
+  const [primary, secondary] = getTeamColors(player.teamCode);
+
+  return (
+    <article style={S.playerToken}>
+      {captain && <span style={S.captainBadge}>C</span>}
+      {viceCaptain && <span style={S.viceBadge}>VC</span>}
+      <Jersey
+        primary={primary}
+        secondary={secondary}
+        number={player.jerseyNumber || "-"}
+      />
+      <strong style={S.tokenName}>{player.name}</strong>
+      <span style={S.tokenMeta}>
+        {player.teamCode} | ${Number(player.price || 0).toFixed(1)}m
+      </span>
+      <span style={S.tokenFixture}>{player.nextFixture || "Fixture TBD"}</span>
+    </article>
+  );
+}
+
+function EmptyToken({ position }) {
+  return (
+    <article style={{ ...S.playerToken, ...S.emptyToken }}>
+      <div style={S.emptyJersey}>+</div>
+      <strong style={S.tokenName}>{position}</strong>
+      <span style={S.tokenMeta}>Empty slot</span>
+      <span style={S.tokenFixture}>Add player</span>
+    </article>
+  );
+}
+
+function PlayerRow({ player, selected }) {
+  const [primary, secondary] = getTeamColors(player.teamCode);
+
+  return (
+    <article style={{ ...S.playerRow, ...(selected ? S.selectedRow : {}) }}>
+      <Jersey
+        primary={primary}
+        secondary={secondary}
+        number={player.jerseyNumber || "-"}
+        size={46}
+      />
+      <div style={S.rowMain}>
+        <strong>{player.fullName || player.name}</strong>
+        <span>
+          {player.team || player.teamCode} | {player.position} |{" "}
+          {player.nextFixture || "Fixture TBD"}
+        </span>
+      </div>
+      <div style={S.rowPrice}>${Number(player.price || 0).toFixed(1)}m</div>
+    </article>
+  );
+}
+
+function Jersey({ primary, secondary, number, size = 58 }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 100 96"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      aria-hidden="true"
+    >
+      <path
+        d="M28 18 10 32l9 11 7-6v45h48V37l7 6 9-11-18-14c-6 6-13 9-22 9s-16-3-22-9Z"
+        fill={primary}
+        stroke="rgba(0,0,0,.3)"
+        strokeWidth="2"
+      />
+      <path
+        d="M38 18c3 8 21 8 24 0-3-5-8-8-12-8s-9 3-12 8Z"
+        fill={secondary}
+        opacity=".95"
+      />
+      <path d="m10 32 9 11 7-6v13L12 45Z" fill={secondary} opacity=".48" />
+      <path d="m90 32-9 11-7-6v13l14-5Z" fill={secondary} opacity=".48" />
+      <text
+        x="50"
+        y="64"
+        textAnchor="middle"
+        fontSize="26"
+        fontWeight="900"
+        fill={secondary}
+        fontFamily="Arial, sans-serif"
+      >
         {number}
       </text>
     </svg>
   );
 }
 
-// ── APP ───────────────────────────────────────────────────────────────────────
-export default function App() {
-  const [tab, setTab]               = useState("My Team");
-  const [formation, setFormation]   = useState("4-3-3");
-  const [squad, setSquad]           = useState({});
-  const [captain, setCaptain]       = useState(null);
-  const [viceCap, setViceCap]       = useState(null);
-  const [teamName, setTeamName]     = useState("My WC26 Vlog XI");
-  const [editName, setEditName]     = useState(false);
-  const [budget, setBudget]         = useState(100);
-  const [editBudget, setEditBudget] = useState(false);
-  const [pickerSlot, setPickerSlot] = useState(null);
-  const [swapSlot, setSwapSlot]     = useState(null);
-  const [posFilter, setPosFilter]   = useState("All");
-  const [search, setSearch]         = useState("");
-
-  const startSlots = useMemo(() => {
-    const { DEF, MID, FWD } = FORMATIONS[formation];
-    const list = [{ key:"GK-0", pos:"GK" }];
-    for (let i=0;i<DEF;i++) list.push({ key:`DEF-${i}`, pos:"DEF" });
-    for (let i=0;i<MID;i++) list.push({ key:`MID-${i}`, pos:"MID" });
-    for (let i=0;i<FWD;i++) list.push({ key:`FWD-${i}`, pos:"FWD" });
-    return list;
-  }, [formation]);
-
-  const selectedIds     = Object.values(squad).filter(Boolean);
-  const selectedPlayers = selectedIds.map(id => SAMPLE_PLAYERS.find(p=>p.id===id)).filter(Boolean);
-  const totalCost       = selectedPlayers.reduce((s,p)=>s+p.price,0);
-  const budgetLeft      = budget - totalCost;
-
-  const handleFormationChange = f => {
-    setFormation(f);
-    const { DEF, MID, FWD } = FORMATIONS[f];
-    const valid = new Set(["GK-0",
-      ...[...Array(DEF)].map((_,i)=>`DEF-${i}`),
-      ...[...Array(MID)].map((_,i)=>`MID-${i}`),
-      ...[...Array(FWD)].map((_,i)=>`FWD-${i}`),
-      ...SUB_SLOTS]);
-    setSquad(prev=>{ const n={}; for(const k of Object.keys(prev)) if(valid.has(k)) n[k]=prev[k]; return n; });
-  };
-
-  const assignPlayer = pid => {
-    if (!pickerSlot) return;
-    const n = { ...squad };
-    for (const k of Object.keys(n)) if (n[k]===pid) delete n[k];
-    n[pickerSlot] = pid;
-    setSquad(n);
-    setPickerSlot(null);
-    setSearch("");
-  };
-
-  const removeFromSlot = key => {
-    const pid = squad[key];
-    if (pid===captain) setCaptain(null);
-    if (pid===viceCap) setViceCap(null);
-    setSquad(prev=>{ const n={...prev}; delete n[key]; return n; });
-  };
-
-  const doSwap = (a,b) => {
-    setSquad(prev=>{
-      const n={...prev};
-      const va=n[a], vb=n[b];
-      if(vb) n[a]=vb; else delete n[a];
-      if(va) n[b]=va; else delete n[b];
-      return n;
-    });
-    setSwapSlot(null);
-  };
-
-  const pickerPos = pickerSlot ? (pickerSlot.startsWith("SUB")?"ANY":pickerSlot.split("-")[0]) : null;
-  const availablePlayers = useMemo(()=>{
-    if (!pickerPos) return [];
-    return SAMPLE_PLAYERS.filter(p=>
-      (pickerPos==="ANY"||p.position===pickerPos) &&
-      !selectedIds.includes(p.id) &&
-      (p.fullName.toLowerCase().includes(search.toLowerCase())||p.teamCode.toLowerCase().includes(search.toLowerCase()))
-    );
-  }, [pickerPos, selectedIds, search]);
-
-  const handleSlotClick = key => {
-    if (swapSlot) {
-      if (swapSlot===key) { setSwapSlot(null); return; }
-      doSwap(swapSlot, key);
-    } else {
-      if (!squad[key]) setPickerSlot(key);
-    }
-  };
-
+function PitchLines() {
   return (
-    <div style={S.shell}>
-      {/* ── HEADER ── */}
-      <header style={S.header}>
-        <div style={S.hLogo}>WC<span style={{color:"#ffe600"}}>26</span></div>
-        <div style={S.hMid}>
-          {editName
-            ? <input style={S.nameIn} value={teamName} autoFocus
-                onChange={e=>setTeamName(e.target.value)}
-                onBlur={()=>setEditName(false)}
-                onKeyDown={e=>e.key==="Enter"&&setEditName(false)}/>
-            : <div style={S.hTeamName} onClick={()=>setEditName(true)}>{teamName}</div>
-          }
-          <div style={S.hSub}>
-            Transfers deadline: <span style={{color:"#ffe600",fontWeight:700}}> 12 June, 01:30</span>
-          </div>
-        </div>
-        <div style={S.hRight}>
-          <div style={{fontSize:11,opacity:.5}}>Budget</div>
-          {editBudget
-            ? <input type="number" style={S.budgetIn} value={budget} autoFocus
-                onChange={e=>setBudget(Number(e.target.value))}
-                onBlur={()=>setEditBudget(false)}
-                onKeyDown={e=>e.key==="Enter"&&setEditBudget(false)}/>
-            : <div style={{fontWeight:800,fontSize:13,color:budgetLeft<0?"#ef4444":"#10b981",cursor:"pointer"}}
-                onClick={()=>setEditBudget(true)}>${budgetLeft.toFixed(1)}m left</div>
-          }
-        </div>
-      </header>
-
-      {/* ── TABS ── */}
-      <div style={S.tabBar}>
-        {TABS.map(t=>(
-          <button key={t} onClick={()=>setTab(t)} style={{...S.tabBtn,...(tab===t?S.tabOn:{})}}>
-            {t}
-            {tab===t && <div style={S.tabUnderline}/>}
-          </button>
-        ))}
-      </div>
-
-      {/* ── CONTENT ── */}
-      <div style={S.content}>
-        {tab==="My Team"   && <TeamView startSlots={startSlots} squad={squad} formation={formation}
-          captain={captain} viceCap={viceCap} swapSlot={swapSlot} setSwapSlot={setSwapSlot}
-          onFormationChange={handleFormationChange} onSlotClick={handleSlotClick}
-          onRemove={removeFromSlot} onSetCaptain={setCaptain} onSetVC={setViceCap}
-          totalCost={totalCost} budgetLeft={budgetLeft} budget={budget} selectedIds={selectedIds}/>}
-        {tab==="Players"   && <PlayersView posFilter={posFilter} setPosFilter={setPosFilter}
-          squad={squad} captain={captain} viceCap={viceCap}/>}
-        {tab==="Fixtures"  && <FixturesView/>}
-        {tab==="Vlog Mode" && <VlogView startSlots={startSlots} squad={squad} formation={formation}
-          captain={captain} viceCap={viceCap} teamName={teamName} totalCost={totalCost} budget={budget}/>}
-      </div>
-
-      {/* ── PICKER MODAL ── */}
-      {pickerSlot && (
-        <div style={S.overlay} onClick={()=>{setPickerSlot(null);setSearch("");}}>
-          <div style={S.modal} onClick={e=>e.stopPropagation()}>
-            <div style={S.mHead}>
-              <div style={{fontWeight:800,fontSize:15}}>
-                Select {pickerPos==="ANY"?"Sub":pickerPos} Player
-              </div>
-              <button style={S.mClose} onClick={()=>{setPickerSlot(null);setSearch("");}}>✕</button>
-            </div>
-            <input style={S.mSearch} placeholder="Search name / country..." value={search}
-              onChange={e=>setSearch(e.target.value)} autoFocus/>
-            <div style={S.mList}>
-              {availablePlayers.length===0
-                ? <div style={{padding:24,textAlign:"center",opacity:.4,fontSize:13}}>No players found</div>
-                : availablePlayers.map(p=>{
-                  const [pri,sec]=getTeamColors(p.teamCode);
-                  return (
-                    <div key={p.id} style={S.mRow} onClick={()=>assignPlayer(p.id)}>
-                      <div style={{flexShrink:0}}>
-                        <Jersey primary={pri} secondary={sec} number={p.jerseyNumber} size={40}/>
-                      </div>
-                      <div style={{flex:1}}>
-                        <div style={{fontWeight:700,fontSize:13}}>{p.fullName}</div>
-                        <div style={{fontSize:11,opacity:.5}}>{p.teamCode} · {p.position} · {p.nextFixture}</div>
-                      </div>
-                      <div style={{fontWeight:800,color:"#10b981",fontSize:13}}>${p.price}m</div>
-                    </div>
-                  );
-                })
-              }
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+    <svg style={S.pitchLines} viewBox="0 0 100 100" preserveAspectRatio="none">
+      <rect x="4" y="4" width="92" height="92" rx="3" fill="none" />
+      <line x1="4" y1="50" x2="96" y2="50" />
+      <circle cx="50" cy="50" r="11" fill="none" />
+      <rect x="28" y="4" width="44" height="14" fill="none" />
+      <rect x="28" y="82" width="44" height="14" fill="none" />
+    </svg>
   );
 }
 
-// ── TEAM VIEW ─────────────────────────────────────────────────────────────────
-function TeamView({ startSlots, squad, formation, captain, viceCap, swapSlot, setSwapSlot,
-  onFormationChange, onSlotClick, onRemove, onSetCaptain, onSetVC,
-  totalCost, budgetLeft, budget, selectedIds }) {
-
-  const rows = POS_ORDER.map(pos => startSlots.filter(s=>s.key.startsWith(pos)));
-  const pct  = Math.min((totalCost/budget)*100,100);
-
-  return (
-    <div style={S.teamWrap}>
-      {/* Formation + budget bar */}
-      <div style={S.controlRow}>
-        <div style={S.formRow}>
-          <span style={{fontSize:11,opacity:.45,textTransform:"uppercase",letterSpacing:.8}}>Formation</span>
-          <select style={S.fSel} value={formation} onChange={e=>onFormationChange(e.target.value)}>
-            {Object.keys(FORMATIONS).map(f=><option key={f} value={f}>{f}</option>)}
-          </select>
-        </div>
-        <div style={{flex:1,display:"flex",flexDirection:"column",gap:4}}>
-          <div style={{display:"flex",justifyContent:"space-between",fontSize:11}}>
-            <span style={{opacity:.4}}>Squad {selectedIds.length}/15</span>
-            <span style={{fontWeight:700,color:budgetLeft<0?"#ef4444":"#e2e8f0"}}>${totalCost.toFixed(1)}m / ${budget}m</span>
-          </div>
-          <div style={S.bTrack}><div style={{...S.bFill,width:`${pct}%`,background:pct>90?"#ef4444":pct>70?"#f59e0b":"#22c55e"}}/></div>
-        </div>
-      </div>
-
-      {swapSlot && (
-        <div style={S.swapBar}>
-          ↔ Swap mode · tap another player &nbsp;
-          <span style={{color:"#fbbf24",cursor:"pointer"}} onClick={()=>setSwapSlot(null)}>Cancel</span>
-        </div>
-      )}
-
-      {/* PITCH */}
-      <div style={S.pitch}>
-        <PitchMarkings/>
-        {rows.map((rowSlots,ri)=>(
-          <div key={ri} style={S.pitchRow}>
-            {rowSlots.map(slot=>{
-              const pid=squad[slot.key];
-              const player=pid?SAMPLE_PLAYERS.find(p=>p.id===pid):null;
-              return (
-                <JerseyToken key={slot.key} slot={slot} player={player}
-                  isCap={pid===captain} isVC={pid===viceCap}
-                  isSwapSrc={swapSlot===slot.key}
-                  isSwapTarget={!!swapSlot&&swapSlot!==slot.key&&!!pid}
-                  onClick={()=>onSlotClick(slot.key)}
-                  onMenu={(action)=>{
-                    if(action==="remove")  onRemove(slot.key);
-                    if(action==="captain") onSetCaptain(pid===captain?null:pid);
-                    if(action==="vc")      onSetVC(pid===viceCap?null:pid);
-                    if(action==="swap")    setSwapSlot(slot.key);
-                  }}/>
-              );
-            })}
-          </div>
-        ))}
-      </div>
-
-      {/* BENCH */}
-      <div style={S.benchHead}>
-        <span style={S.benchTitle}>🪑 SUBSTITUTES BENCH</span>
-        <span style={{fontSize:11,opacity:.35}}>4 players</span>
-      </div>
-      <div style={S.bench}>
-        {SUB_SLOTS.map((key,i)=>{
-          const pid=squad[key];
-          const player=pid?SAMPLE_PLAYERS.find(p=>p.id===pid):null;
-          return (
-            <SubCard key={key} subNum={i+1} player={player}
-              isCap={pid===captain} isVC={pid===viceCap}
-              isSwapSrc={swapSlot===key}
-              isSwapTarget={!!swapSlot&&swapSlot!==key&&!!pid}
-              onClick={()=>onSlotClick(key)}
-              onMenu={(action)=>{
-                if(action==="remove")  onRemove(key);
-                if(action==="captain") onSetCaptain(pid===captain?null:pid);
-                if(action==="vc")      onSetVC(pid===viceCap?null:pid);
-                if(action==="swap")    setSwapSlot(key);
-              }}/>
-          );
-        })}
-      </div>
-
-      {/* LEGEND */}
-      <div style={S.legend}>
-        <span style={S.legItem}><span style={{...S.legDot,background:"#f59e0b"}}>C</span> Captain</span>
-        <span style={S.legItem}><span style={{...S.legDot,background:"#3b82f6"}}>VC</span> Vice-Captain</span>
-      </div>
-    </div>
-  );
-}
-
-// ── PITCH MARKINGS ────────────────────────────────────────────────────────────
-function PitchMarkings() {
-  return (
-    <>
-      <div style={{position:"absolute",left:"50%",top:"50%",width:70,height:70,borderRadius:"50%",border:"1.5px solid rgba(255,255,255,.13)",transform:"translate(-50%,-50%)",pointerEvents:"none"}}/>
-      <div style={{position:"absolute",left:0,right:0,top:"50%",height:1,background:"rgba(255,255,255,.1)",pointerEvents:"none"}}/>
-      <div style={{position:"absolute",left:"20%",right:"20%",top:0,height:50,border:"1.5px solid rgba(255,255,255,.1)",borderTop:"none",pointerEvents:"none"}}/>
-      <div style={{position:"absolute",left:"20%",right:"20%",bottom:0,height:50,border:"1.5px solid rgba(255,255,255,.1)",borderBottom:"none",pointerEvents:"none"}}/>
-    </>
-  );
-}
-
-// ── JERSEY TOKEN (on pitch) ───────────────────────────────────────────────────
-function JerseyToken({ slot, player, isCap, isVC, isSwapSrc, isSwapTarget, onClick, onMenu }) {
-  const [menu,setMenu]=useState(false);
-  const pos = slot.key.split("-")[0];
-
-  if (!player) {
-    return (
-      <div style={S.emptySlot} onClick={onClick}>
-        <div style={S.emptyJerseyWrap}>
-          <svg width={46} height={44} viewBox="0 0 100 95" fill="none">
-            <path d="M28 18 L10 32 L18 40 L22 36 L22 85 L78 85 L78 36 L82 40 L90 32 L72 18 C68 22 58 26 50 26 C42 26 32 22 28 18Z"
-              fill="rgba(255,255,255,0.08)" stroke="rgba(255,255,255,0.2)" strokeWidth="2" strokeDasharray="4 3"/>
-            <path d="M38 18 Q50 28 62 18 Q56 12 50 12 Q44 12 38 18Z" fill="rgba(255,255,255,0.05)"/>
-            <text x="50" y="62" textAnchor="middle" fontSize="28" fill="rgba(255,255,255,0.3)" fontFamily="Arial">+</text>
-          </svg>
-        </div>
-        <div style={{fontSize:9,opacity:.35,marginTop:2,textTransform:"uppercase",letterSpacing:.5}}>{pos}</div>
-      </div>
-    );
-  }
-
-  const [pri,sec] = getTeamColors(player.teamCode);
-
-  return (
-    <div style={{...S.jerseySlot,...(isSwapSrc?{filter:"drop-shadow(0 0 8px #60a5fa)"}:{}),...(isSwapTarget?{filter:"drop-shadow(0 0 8px #fbbf24)",opacity:.8}:{})}}>
-      {/* C/VC badges */}
-      {isCap && <div style={S.cBadge}>C</div>}
-      {isVC  && <div style={S.vcBadge}>VC</div>}
-
-      {/* Jersey - tap opens menu */}
-      <div style={{position:"relative",cursor:"pointer"}} onClick={e=>{e.stopPropagation();setMenu(!menu);}}>
-        <Jersey primary={pri} secondary={sec} number={player.jerseyNumber} size={50}/>
-      </div>
-
-      {/* Name label */}
-      <div style={S.jName}>{player.name}</div>
-
-      {/* Opponent tag */}
-      <div style={S.jFixture}>{player.nextFixture}</div>
-
-      {/* Context Menu */}
-      {menu && (
-        <div style={S.ctxMenu} onClick={e=>e.stopPropagation()}>
-          <div style={S.ctxRow} onClick={()=>{onMenu("captain");setMenu(false);}}>
-            {isCap?"Remove C":"⭐ Set Captain"}
-          </div>
-          <div style={S.ctxRow} onClick={()=>{onMenu("vc");setMenu(false);}}>
-            {isVC?"Remove VC":"🔵 Set Vice-Cap"}
-          </div>
-          <div style={S.ctxRow} onClick={()=>{onMenu("swap");setMenu(false);}}>
-            ↔ Swap
-          </div>
-          <div style={{...S.ctxRow,color:"#ef4444"}} onClick={()=>{onMenu("remove");setMenu(false);}}>
-            ✕ Remove
-          </div>
-          <div style={{...S.ctxRow,opacity:.35,fontSize:11}} onClick={()=>setMenu(false)}>Cancel</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── SUB CARD ──────────────────────────────────────────────────────────────────
-function SubCard({ subNum, player, isCap, isVC, isSwapSrc, isSwapTarget, onClick, onMenu }) {
-  const [menu,setMenu]=useState(false);
-
-  if (!player) {
-    return (
-      <div style={S.subEmpty} onClick={onClick}>
-        <div style={{fontSize:9,opacity:.3,marginBottom:4,textTransform:"uppercase",letterSpacing:.5}}>SUB {subNum}</div>
-        <svg width={36} height={34} viewBox="0 0 100 95" fill="none">
-          <path d="M28 18 L10 32 L18 40 L22 36 L22 85 L78 85 L78 36 L82 40 L90 32 L72 18 C68 22 58 26 50 26 C42 26 32 22 28 18Z"
-            fill="rgba(255,255,255,0.06)" stroke="rgba(255,255,255,0.15)" strokeWidth="2" strokeDasharray="5 4"/>
-          <path d="M38 18 Q50 28 62 18 Q56 12 50 12 Q44 12 38 18Z" fill="rgba(255,255,255,0.03)"/>
-          <text x="50" y="62" textAnchor="middle" fontSize="28" fill="rgba(255,255,255,0.2)" fontFamily="Arial">+</text>
-        </svg>
-      </div>
-    );
-  }
-
-  const [pri,sec] = getTeamColors(player.teamCode);
-  const POS_BG = { GK:"#f59e0b", DEF:"#3b82f6", MID:"#10b981", FWD:"#ef4444" };
-
-  return (
-    <div style={{...S.subCard,...(isSwapSrc?{boxShadow:"0 0 0 2px #60a5fa"}:{}),...(isSwapTarget?{boxShadow:"0 0 0 2px #fbbf24",opacity:.8}:{})}}
-      onClick={()=>{if(!menu)onClick();}}>
-      {isCap && <div style={{...S.cBadge,top:2,right:2,fontSize:7}}>C</div>}
-      {isVC  && <div style={{...S.vcBadge,top:2,right:2,fontSize:7}}>VC</div>}
-
-      <div style={{flexShrink:0,cursor:"pointer"}} onClick={e=>{e.stopPropagation();setMenu(!menu);}}>
-        <Jersey primary={pri} secondary={sec} number={player.jerseyNumber} size={44}/>
-      </div>
-
-      {/* pos tag */}
-      <div style={{position:"absolute",bottom:6,left:6,background:POS_BG[player.position]||"#374151",
-        color:"#000",fontSize:8,fontWeight:900,borderRadius:4,padding:"1px 5px"}}>
-        {player.position}
-      </div>
-
-      <div style={S.subInfo}>
-        <div style={{fontWeight:700,fontSize:11,whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis"}}>{player.name}</div>
-        <div style={{fontSize:10,opacity:.45}}>{player.nextFixture}</div>
-        <div style={{fontWeight:800,fontSize:11,color:"#10b981"}}>${player.price}m</div>
-      </div>
-
-      {menu && (
-        <div style={{...S.ctxMenu,top:42,left:4,minWidth:140}} onClick={e=>e.stopPropagation()}>
-          <div style={S.ctxRow} onClick={()=>{onMenu("captain");setMenu(false);}}>
-            {isCap?"Remove C":"⭐ Captain"}
-          </div>
-          <div style={S.ctxRow} onClick={()=>{onMenu("vc");setMenu(false);}}>
-            {isVC?"Remove VC":"🔵 Vice-Cap"}
-          </div>
-          <div style={S.ctxRow} onClick={()=>{onMenu("swap");setMenu(false);}}>↔ Swap</div>
-          <div style={{...S.ctxRow,color:"#ef4444"}} onClick={()=>{onMenu("remove");setMenu(false);}}>✕ Remove</div>
-          <div style={{...S.ctxRow,opacity:.35,fontSize:11}} onClick={()=>setMenu(false)}>Cancel</div>
-        </div>
-      )}
-    </div>
-  );
-}
-
-// ── PLAYERS VIEW ──────────────────────────────────────────────────────────────
-function PlayersView({ posFilter, setPosFilter, squad, captain, viceCap }) {
-  const positions=["All","GK","DEF","MID","FWD"];
-  const selectedIds=Object.values(squad).filter(Boolean);
-  const POS_BG={ GK:"#f59e0b", DEF:"#3b82f6", MID:"#10b981", FWD:"#ef4444", All:"#6366f1" };
-  const filtered=posFilter==="All"?SAMPLE_PLAYERS:SAMPLE_PLAYERS.filter(p=>p.position===posFilter);
-  return (
-    <div style={S.pageWrap}>
-      <div style={S.filterRow}>
-        {positions.map(pos=>(
-          <button key={pos} onClick={()=>setPosFilter(pos)}
-            style={{...S.fBtn,...(posFilter===pos?{background:POS_BG[pos],color:"#000",borderColor:"transparent"}:{})}}>
-            {pos}
-          </button>
-        ))}
-      </div>
-      {filtered.map(p=>{
-        const inSquad=selectedIds.includes(p.id);
-        const [pri,sec]=getTeamColors(p.teamCode);
-        return (
-          <div key={p.id} style={{...S.pRow,...(inSquad?{border:"1px solid #22c55e44",background:"#14532d22"}:{})}}>
-            <Jersey primary={pri} secondary={sec} number={p.jerseyNumber} size={44}/>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontWeight:700,fontSize:13}}>
-                {p.fullName}
-                {p.id===captain&&<span style={{background:"#f59e0b",color:"#000",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:900,marginLeft:6}}>C</span>}
-                {p.id===viceCap&&<span style={{background:"#3b82f6",color:"#fff",borderRadius:4,padding:"1px 5px",fontSize:9,fontWeight:900,marginLeft:6}}>VC</span>}
-              </div>
-              <div style={{fontSize:11,opacity:.45,marginTop:1}}>{p.teamCode} · {p.nextFixture}</div>
-            </div>
-            <div style={{textAlign:"right"}}>
-              <div style={{fontWeight:800,color:inSquad?"#22c55e":"#e2e8f0",fontSize:13}}>${p.price}m</div>
-              <div style={{fontSize:9,opacity:.35,marginTop:1}}>{p.position}</div>
-            </div>
-            {inSquad&&<div style={{width:7,height:7,borderRadius:"50%",background:"#22c55e",flexShrink:0}}/>}
-          </div>
-        );
-      })}
-    </div>
-  );
-}
-
-// ── FIXTURES VIEW ─────────────────────────────────────────────────────────────
-function FixturesView() {
-  const stages=[...new Set(SAMPLE_FIXTURES.map(f=>f.stage))];
-  return (
-    <div style={S.pageWrap}>
-      {stages.map(stage=>(
-        <div key={stage} style={{marginBottom:20}}>
-          <div style={{fontSize:10,color:"#a78bfa",textTransform:"uppercase",letterSpacing:2,fontWeight:700,marginBottom:8}}>{stage}</div>
-          {SAMPLE_FIXTURES.filter(f=>f.stage===stage).map(f=>(
-            <div key={f.id} style={{display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",background:"#111827",border:"1px solid #1f2937",borderRadius:10,padding:"12px 14px",marginBottom:6}}>
-              <div style={{fontSize:11,color:"#6b7280",minWidth:82}}>{f.date}</div>
-              <div style={{flex:1,display:"flex",alignItems:"center",gap:8,fontWeight:700,fontSize:13}}>
-                {f.homeTeam}
-                <span style={{fontSize:9,background:"#1f2937",borderRadius:4,padding:"2px 6px",color:"#6b7280",fontWeight:400}}>VS</span>
-                {f.awayTeam}
-              </div>
-              <div style={{fontSize:11,color:"#6b7280"}}>{f.venue}</div>
-              <div style={{fontSize:10,borderRadius:5,padding:"3px 8px",fontWeight:600,
-                background:f.status==="scheduled"?"#14532d":"#1f2937",
-                color:f.status==="scheduled"?"#22c55e":"#6b7280"}}>{f.status}</div>
-            </div>
-          ))}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-// ── VLOG VIEW ─────────────────────────────────────────────────────────────────
-function VlogView({ startSlots, squad, formation, captain, viceCap, teamName, totalCost, budget }) {
-  const rows = POS_ORDER.map(pos=>startSlots.filter(s=>s.key.startsWith(pos)));
-  const cap  = SAMPLE_PLAYERS.find(p=>p.id===captain);
-  const vc   = SAMPLE_PLAYERS.find(p=>p.id===viceCap);
-  return (
-    <div style={{...S.teamWrap,background:"#060810"}}>
-      <div style={{textAlign:"center",marginBottom:14}}>
-        <div style={{fontSize:10,color:"#ef4444",letterSpacing:3,fontWeight:700,marginBottom:4}}>● REC · VLOG MODE</div>
-        <div style={{fontSize:22,fontWeight:900,marginBottom:3}}>{teamName}</div>
-        <div style={{fontSize:12,opacity:.4}}>
-          {formation}{cap?` · C: ${cap.name}`:""}{vc?` · VC: ${vc.name}`:""}
-        </div>
-        <div style={{fontSize:11,color:"#22c55e",marginTop:2}}>${totalCost.toFixed(1)}m of ${budget}m</div>
-      </div>
-      <div style={S.pitch}>
-        <PitchMarkings/>
-        {rows.map((rowSlots,ri)=>(
-          <div key={ri} style={S.pitchRow}>
-            {rowSlots.map(slot=>{
-              const pid=squad[slot.key];
-              const player=pid?SAMPLE_PLAYERS.find(p=>p.id===pid):null;
-              return <JerseyToken key={slot.key} slot={slot} player={player}
-                isCap={pid===captain} isVC={pid===viceCap}
-                isSwapSrc={false} isSwapTarget={false}
-                onClick={()=>{}} onMenu={()=>{}}/>;
-            })}
-          </div>
-        ))}
-      </div>
-      <div style={S.benchHead}><span style={S.benchTitle}>🪑 BENCH</span></div>
-      <div style={S.bench}>
-        {SUB_SLOTS.map((key,i)=>{
-          const pid=squad[key];
-          const player=pid?SAMPLE_PLAYERS.find(p=>p.id===pid):null;
-          return <SubCard key={key} subNum={i+1} player={player}
-            isCap={pid===captain} isVC={pid===viceCap}
-            isSwapSrc={false} isSwapTarget={false}
-            onClick={()=>{}} onMenu={()=>{}}/>;
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ── STYLES ────────────────────────────────────────────────────────────────────
 const S = {
-  shell:{ minHeight:"100vh", background:"#0b0f19", color:"#e2e8f0", fontFamily:"'DM Sans',system-ui,sans-serif", display:"flex", flexDirection:"column" },
-
-  header:{ background:"#111827", padding:"12px 16px", display:"flex", alignItems:"center", gap:10 },
-  hLogo:{ fontWeight:900, fontSize:18, letterSpacing:-1, flexShrink:0 },
-  hMid:{ flex:1, minWidth:0 },
-  hTeamName:{ fontWeight:800, fontSize:14, cursor:"pointer", whiteSpace:"nowrap", overflow:"hidden", textOverflow:"ellipsis" },
-  hSub:{ fontSize:11, opacity:.5, marginTop:1 },
-  hRight:{ flexShrink:0, textAlign:"right" },
-  nameIn:{ background:"#1f2937", border:"1px solid #3b82f6", color:"#fff", borderRadius:6, padding:"3px 8px", fontSize:13, outline:"none", width:150 },
-  budgetIn:{ background:"transparent", border:"none", color:"#10b981", width:60, fontWeight:800, fontSize:13, outline:"none", textAlign:"right" },
-
-  tabBar:{ display:"flex", background:"#0d1117", borderBottom:"1px solid #1f2937" },
-  tabBtn:{ flex:1, background:"none", border:"none", color:"#6b7280", fontSize:13, fontWeight:600, padding:"12px 4px", cursor:"pointer", position:"relative" },
-  tabOn:{ color:"#fff" },
-  tabUnderline:{ position:"absolute", bottom:0, left:"15%", right:"15%", height:2, background:"#ffe600", borderRadius:2 },
-  content:{ flex:1 },
-
-  teamWrap:{ padding:"12px 10px", maxWidth:600, margin:"0 auto", width:"100%", boxSizing:"border-box" },
-  controlRow:{ display:"flex", alignItems:"center", gap:10, marginBottom:10, background:"#111827", border:"1px solid #1f2937", borderRadius:10, padding:"10px 12px" },
-  formRow:{ display:"flex", alignItems:"center", gap:6, flexShrink:0 },
-  fSel:{ background:"#1f2937", border:"1px solid #374151", color:"#fff", borderRadius:7, padding:"5px 8px", fontSize:13, fontWeight:700, cursor:"pointer", outline:"none" },
-  bTrack:{ height:5, background:"#1f2937", borderRadius:99, overflow:"hidden" },
-  bFill:{ height:"100%", borderRadius:99, transition:"width .3s, background .3s" },
-  swapBar:{ background:"#1e3a5f", border:"1px solid #3b82f6", borderRadius:8, padding:"7px 12px", fontSize:12, color:"#93c5fd", marginBottom:8, textAlign:"center" },
-
-  pitch:{ background:"linear-gradient(180deg,#0d4e1c 0%,#105e20 40%,#105e20 60%,#0d4e1c 100%)", borderRadius:12, border:"2px solid #145e22", padding:"14px 6px", display:"flex", flexDirection:"column", gap:10, position:"relative", overflow:"hidden", minHeight:380, boxShadow:"inset 0 0 40px rgba(0,0,0,.4)" },
-  pitchRow:{ display:"flex", justifyContent:"center", gap:4, position:"relative", zIndex:1 },
-
-  emptySlot:{ display:"flex", flexDirection:"column", alignItems:"center", cursor:"pointer", width:58 },
-  emptyJerseyWrap:{ display:"flex", alignItems:"center", justifyContent:"center" },
-
-  jerseySlot:{ display:"flex", flexDirection:"column", alignItems:"center", width:58, position:"relative", cursor:"pointer" },
-  jName:{ fontSize:9, fontWeight:700, color:"#fff", textAlign:"center", marginTop:1, textShadow:"0 1px 4px rgba(0,0,0,.9)", maxWidth:58, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" },
-  jFixture:{ fontSize:8, background:"rgba(0,0,0,.65)", color:"#e2e8f0", borderRadius:4, padding:"1px 5px", marginTop:2, textAlign:"center", fontWeight:600 },
-
-  cBadge:{ position:"absolute", top:-4, right:0, background:"#f59e0b", color:"#000", fontSize:8, fontWeight:900, borderRadius:99, width:15, height:15, display:"flex", alignItems:"center", justifyContent:"center", zIndex:3, boxShadow:"0 1px 4px rgba(0,0,0,.6)" },
-  vcBadge:{ position:"absolute", top:-4, right:0, background:"#3b82f6", color:"#fff", fontSize:8, fontWeight:900, borderRadius:99, width:15, height:15, display:"flex", alignItems:"center", justifyContent:"center", zIndex:3, boxShadow:"0 1px 4px rgba(0,0,0,.6)" },
-
-  ctxMenu:{ position:"absolute", top:58, left:"50%", transform:"translateX(-50%)", background:"#111827", border:"1px solid #374151", borderRadius:10, overflow:"hidden", zIndex:99, boxShadow:"0 12px 40px rgba(0,0,0,.9)", minWidth:148 },
-  ctxRow:{ padding:"9px 14px", fontSize:12, fontWeight:600, cursor:"pointer", borderBottom:"1px solid #1f2937", whiteSpace:"nowrap" },
-
-  benchHead:{ display:"flex", justifyContent:"space-between", alignItems:"center", margin:"12px 0 6px" },
-  benchTitle:{ fontSize:11, fontWeight:800, opacity:.6, textTransform:"uppercase", letterSpacing:1 },
-  bench:{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:6 },
-  subEmpty:{ background:"#0d1117", border:"2px dashed #1f2937", borderRadius:9, padding:"10px 6px", display:"flex", flexDirection:"column", alignItems:"center", justifyContent:"center", cursor:"pointer", minHeight:80 },
-  subCard:{ background:"#111827", border:"1px solid #1f2937", borderRadius:9, padding:"8px 6px", display:"flex", flexDirection:"column", alignItems:"center", gap:4, position:"relative", cursor:"pointer", minHeight:80 },
-  subInfo:{ width:"100%", textAlign:"center" },
-
-  legend:{ display:"flex", gap:14, justifyContent:"center", marginTop:10, opacity:.55 },
-  legItem:{ display:"flex", alignItems:"center", gap:5, fontSize:11 },
-  legDot:{ display:"inline-flex", alignItems:"center", justifyContent:"center", width:16, height:16, borderRadius:"50%", fontSize:8, fontWeight:900, color:"#000" },
-
-  overlay:{ position:"fixed", inset:0, background:"rgba(0,0,0,.8)", display:"flex", alignItems:"flex-end", justifyContent:"center", zIndex:200 },
-  modal:{ background:"#0d1117", border:"1px solid #1f2937", borderRadius:"14px 14px 0 0", width:"100%", maxWidth:480, maxHeight:"78vh", display:"flex", flexDirection:"column" },
-  mHead:{ display:"flex", justifyContent:"space-between", alignItems:"center", padding:"14px 16px", borderBottom:"1px solid #1f2937" },
-  mClose:{ background:"#1f2937", border:"none", color:"#fff", width:28, height:28, borderRadius:"50%", cursor:"pointer", fontWeight:700 },
-  mSearch:{ background:"#080d14", border:"none", borderBottom:"1px solid #1f2937", color:"#fff", padding:"11px 16px", fontSize:14, outline:"none", width:"100%", boxSizing:"border-box" },
-  mList:{ overflow:"auto", flex:1 },
-  mRow:{ display:"flex", alignItems:"center", gap:10, padding:"10px 16px", cursor:"pointer", borderBottom:"1px solid #080d14" },
-
-  pageWrap:{ padding:"12px 12px", maxWidth:600, margin:"0 auto", width:"100%", boxSizing:"border-box" },
-  filterRow:{ display:"flex", gap:6, marginBottom:12, flexWrap:"wrap" },
-  fBtn:{ background:"#111827", border:"1px solid #1f2937", color:"#6b7280", borderRadius:7, padding:"6px 12px", fontSize:12, fontWeight:600, cursor:"pointer" },
-  pRow:{ display:"flex", alignItems:"center", gap:10, background:"#111827", border:"1px solid #1f2937", borderRadius:9, padding:"8px 12px", marginBottom:6 },
+  shell: {
+    minHeight: "100vh",
+    background: "#07111f",
+    color: "#e5edf7",
+    fontFamily: "Inter, system-ui, Segoe UI, sans-serif",
+    textAlign: "left",
+  },
+  centerScreen: {
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    flexDirection: "column",
+    textAlign: "center",
+  },
+  header: {
+    display: "flex",
+    justifyContent: "space-between",
+    gap: 16,
+    padding: "18px 18px 14px",
+    background: "#0b1626",
+    borderBottom: "1px solid rgba(255,255,255,.08)",
+  },
+  kicker: {
+    color: "#facc15",
+    fontSize: 11,
+    textTransform: "uppercase",
+    letterSpacing: 1.7,
+    fontWeight: 800,
+  },
+  title: {
+    margin: "3px 0",
+    color: "#ffffff",
+    fontSize: 26,
+    lineHeight: 1.05,
+    fontWeight: 900,
+  },
+  subTitle: {
+    color: "#94a3b8",
+    fontSize: 13,
+  },
+  budgetBox: {
+    minWidth: 116,
+    padding: "10px 12px",
+    background: "#111c2e",
+    border: "1px solid rgba(255,255,255,.08)",
+    borderRadius: 10,
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "flex-end",
+    justifyContent: "center",
+    gap: 1,
+  },
+  smallMuted: {
+    color: "#94a3b8",
+    fontSize: 11,
+  },
+  tabs: {
+    display: "grid",
+    gridTemplateColumns: "repeat(4, 1fr)",
+    background: "#0a1322",
+    borderBottom: "1px solid rgba(255,255,255,.08)",
+  },
+  tab: {
+    border: 0,
+    background: "transparent",
+    color: "#94a3b8",
+    padding: "12px 6px",
+    fontWeight: 800,
+    cursor: "pointer",
+  },
+  activeTab: {
+    color: "#07111f",
+    background: "#facc15",
+  },
+  content: {
+    padding: 12,
+  },
+  pitchWrap: {
+    maxWidth: 820,
+    margin: "0 auto",
+  },
+  pitchHeader: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "flex-end",
+    gap: 12,
+    marginBottom: 10,
+  },
+  sectionTitle: {
+    color: "#ffffff",
+    margin: "2px 0 0",
+    fontSize: 22,
+    fontWeight: 900,
+  },
+  legend: {
+    color: "#94a3b8",
+    fontSize: 12,
+    textAlign: "right",
+  },
+  pitch: {
+    position: "relative",
+    overflow: "hidden",
+    minHeight: 560,
+    padding: "24px 8px",
+    borderRadius: 14,
+    border: "2px solid rgba(255,255,255,.12)",
+    background:
+      "repeating-linear-gradient(90deg, #0b6b32 0 58px, #0f7a3a 58px 116px)",
+    boxShadow: "inset 0 0 60px rgba(0,0,0,.35)",
+    display: "flex",
+    flexDirection: "column",
+    justifyContent: "space-between",
+    gap: 14,
+  },
+  pitchLines: {
+    position: "absolute",
+    inset: 8,
+    width: "calc(100% - 16px)",
+    height: "calc(100% - 16px)",
+    stroke: "rgba(255,255,255,.25)",
+    strokeWidth: 0.7,
+    pointerEvents: "none",
+  },
+  pitchRow: {
+    position: "relative",
+    zIndex: 1,
+    display: "flex",
+    justifyContent: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  playerToken: {
+    width: 94,
+    minHeight: 126,
+    padding: "7px 6px",
+    borderRadius: 10,
+    background: "rgba(2,6,23,.74)",
+    border: "1px solid rgba(255,255,255,.12)",
+    boxShadow: "0 8px 22px rgba(0,0,0,.25)",
+    display: "flex",
+    flexDirection: "column",
+    alignItems: "center",
+    position: "relative",
+    boxSizing: "border-box",
+  },
+  emptyToken: {
+    opacity: 0.72,
+    borderStyle: "dashed",
+  },
+  emptyJersey: {
+    width: 50,
+    height: 50,
+    borderRadius: 12,
+    border: "1px dashed rgba(255,255,255,.35)",
+    display: "flex",
+    alignItems: "center",
+    justifyContent: "center",
+    color: "#cbd5e1",
+    fontWeight: 900,
+    fontSize: 24,
+    marginBottom: 5,
+  },
+  tokenName: {
+    maxWidth: "100%",
+    color: "#ffffff",
+    fontSize: 11,
+    lineHeight: 1.15,
+    textAlign: "center",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  tokenMeta: {
+    marginTop: 3,
+    color: "#86efac",
+    fontSize: 10,
+    fontWeight: 800,
+    textAlign: "center",
+  },
+  tokenFixture: {
+    marginTop: 3,
+    padding: "2px 5px",
+    borderRadius: 5,
+    background: "rgba(15,23,42,.9)",
+    color: "#cbd5e1",
+    fontSize: 10,
+    lineHeight: 1.1,
+    textAlign: "center",
+    maxWidth: "100%",
+    whiteSpace: "nowrap",
+    overflow: "hidden",
+    textOverflow: "ellipsis",
+  },
+  captainBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 20,
+    height: 20,
+    borderRadius: "50%",
+    background: "#facc15",
+    color: "#111827",
+    fontSize: 10,
+    fontWeight: 900,
+    display: "grid",
+    placeItems: "center",
+  },
+  viceBadge: {
+    position: "absolute",
+    top: 4,
+    right: 4,
+    width: 24,
+    height: 20,
+    borderRadius: 999,
+    background: "#38bdf8",
+    color: "#082f49",
+    fontSize: 9,
+    fontWeight: 900,
+    display: "grid",
+    placeItems: "center",
+  },
+  page: {
+    maxWidth: 880,
+    margin: "0 auto",
+  },
+  toolbar: {
+    display: "flex",
+    gap: 10,
+    justifyContent: "space-between",
+    marginBottom: 12,
+    flexWrap: "wrap",
+  },
+  filterGroup: {
+    display: "flex",
+    gap: 6,
+    flexWrap: "wrap",
+  },
+  filterButton: {
+    border: "1px solid rgba(255,255,255,.12)",
+    background: "#101b2d",
+    color: "#cbd5e1",
+    borderRadius: 999,
+    padding: "8px 12px",
+    fontWeight: 900,
+    cursor: "pointer",
+  },
+  filterButtonActive: {
+    background: "#facc15",
+    color: "#07111f",
+  },
+  search: {
+    minWidth: 230,
+    flex: 1,
+    border: "1px solid rgba(255,255,255,.12)",
+    background: "#101b2d",
+    color: "#ffffff",
+    borderRadius: 999,
+    padding: "9px 14px",
+    outline: "none",
+  },
+  playerList: {
+    display: "grid",
+    gap: 8,
+  },
+  playerRow: {
+    display: "flex",
+    alignItems: "center",
+    gap: 10,
+    padding: "10px 12px",
+    borderRadius: 12,
+    background: "#0f1a2b",
+    border: "1px solid rgba(255,255,255,.08)",
+  },
+  selectedRow: {
+    borderColor: "rgba(74,222,128,.55)",
+    background: "rgba(22,101,52,.28)",
+  },
+  rowMain: {
+    flex: 1,
+    minWidth: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: 2,
+    color: "#ffffff",
+  },
+  rowPrice: {
+    color: "#86efac",
+    fontWeight: 900,
+    fontSize: 13,
+  },
+  stageBlock: {
+    marginBottom: 18,
+  },
+  stageTitle: {
+    margin: "0 0 8px",
+    color: "#facc15",
+    fontSize: 15,
+    textTransform: "uppercase",
+    letterSpacing: 1.4,
+  },
+  fixtureList: {
+    display: "grid",
+    gap: 8,
+  },
+  fixtureCard: {
+    display: "grid",
+    gridTemplateColumns: "96px 1fr 180px 88px",
+    alignItems: "center",
+    gap: 12,
+    padding: "12px 14px",
+    borderRadius: 12,
+    background: "#0f1a2b",
+    border: "1px solid rgba(255,255,255,.08)",
+  },
+  fixtureDate: {
+    display: "flex",
+    flexDirection: "column",
+    color: "#cbd5e1",
+    fontSize: 12,
+  },
+  fixtureTeams: {
+    display: "flex",
+    gap: 8,
+    alignItems: "center",
+    color: "#ffffff",
+    fontWeight: 900,
+  },
+  fixtureVenue: {
+    color: "#94a3b8",
+    fontSize: 12,
+  },
+  status: {
+    justifySelf: "end",
+    padding: "4px 8px",
+    borderRadius: 999,
+    background: "rgba(34,197,94,.14)",
+    color: "#86efac",
+    fontSize: 11,
+    fontWeight: 900,
+    textTransform: "uppercase",
+  },
+  vlog: {
+    maxWidth: 920,
+    margin: "0 auto",
+    padding: 14,
+    borderRadius: 16,
+    background: "#030712",
+  },
+  rec: {
+    color: "#fb7185",
+    textAlign: "center",
+    fontSize: 12,
+    letterSpacing: 2,
+    fontWeight: 900,
+  },
+  vlogTitle: {
+    margin: "4px 0",
+    textAlign: "center",
+    color: "#ffffff",
+    fontSize: 30,
+    fontWeight: 900,
+  },
+  vlogMeta: {
+    marginBottom: 14,
+    color: "#94a3b8",
+    textAlign: "center",
+  },
 };
