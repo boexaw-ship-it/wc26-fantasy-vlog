@@ -12,6 +12,7 @@ const FORMATIONS = {
 
 const TABS = ["My Team", "Players", "Fixtures", "Vlog Mode"];
 const POSITION_ROWS = ["FWD", "MID", "DEF", "GK"];
+const STORAGE_KEY = "wc26-vlog-team";
 
 const TEAM_COLORS = {
   ARG: ["#75aadb", "#ffffff"],
@@ -32,7 +33,7 @@ function getTeamColors(code) {
   return TEAM_COLORS[code] || TEAM_COLORS.DEFAULT;
 }
 
-function emptyTeam() {
+function defaultTeam() {
   return {
     teamName: "My WC26 Vlog XI",
     formation: "3-4-3",
@@ -43,11 +44,20 @@ function emptyTeam() {
   };
 }
 
+function getSavedTeam() {
+  try {
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    return saved ? { ...defaultTeam(), ...JSON.parse(saved) } : defaultTeam();
+  } catch {
+    return defaultTeam();
+  }
+}
+
 export default function App() {
   const [tab, setTab] = useState("My Team");
   const [players, setPlayers] = useState([]);
   const [fixtures, setFixtures] = useState([]);
-  const [myTeam, setMyTeam] = useState(emptyTeam());
+  const [myTeam, setMyTeam] = useState(getSavedTeam);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [positionFilter, setPositionFilter] = useState("All");
@@ -56,19 +66,17 @@ export default function App() {
   useEffect(() => {
     async function loadData() {
       try {
-        const [playersRes, fixturesRes, teamRes] = await Promise.all([
+        const [playersRes, fixturesRes] = await Promise.all([
           fetch("./data/fifa-players.json"),
           fetch("./data/fifa-fixtures.json"),
-          fetch("./data/my-team.json"),
         ]);
 
-        if (!playersRes.ok || !fixturesRes.ok || !teamRes.ok) {
+        if (!playersRes.ok || !fixturesRes.ok) {
           throw new Error("Data files could not be loaded.");
         }
 
         setPlayers(await playersRes.json());
         setFixtures(await fixturesRes.json());
-        setMyTeam({ ...emptyTeam(), ...(await teamRes.json()) });
       } catch (err) {
         setError(err.message || "Something went wrong.");
       } finally {
@@ -78,6 +86,10 @@ export default function App() {
 
     loadData();
   }, []);
+
+  useEffect(() => {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(myTeam));
+  }, [myTeam]);
 
   const selectedPlayers = useMemo(() => {
     const ids = myTeam.players || [];
@@ -94,6 +106,43 @@ export default function App() {
   const captain = players.find((player) => player.id === myTeam.captain);
   const viceCaptain = players.find((player) => player.id === myTeam.viceCaptain);
 
+  function togglePlayer(playerId) {
+    setMyTeam((current) => {
+      const selected = current.players || [];
+      const alreadySelected = selected.includes(playerId);
+      const nextPlayers = alreadySelected
+        ? selected.filter((id) => id !== playerId)
+        : selected.length < 15
+          ? [...selected, playerId]
+          : selected;
+
+      return {
+        ...current,
+        players: nextPlayers,
+        captain: nextPlayers.includes(current.captain) ? current.captain : "",
+        viceCaptain: nextPlayers.includes(current.viceCaptain)
+          ? current.viceCaptain
+          : "",
+      };
+    });
+  }
+
+  function setCaptain(playerId) {
+    setMyTeam((current) => ({
+      ...current,
+      captain: current.captain === playerId ? "" : playerId,
+      viceCaptain: current.viceCaptain === playerId ? "" : current.viceCaptain,
+    }));
+  }
+
+  function setViceCaptain(playerId) {
+    setMyTeam((current) => ({
+      ...current,
+      viceCaptain: current.viceCaptain === playerId ? "" : playerId,
+      captain: current.captain === playerId ? "" : current.captain,
+    }));
+  }
+
   if (loading) {
     return <StatusScreen title="Loading fantasy data..." />;
   }
@@ -109,7 +158,22 @@ export default function App() {
           <div style={S.kicker}>World Cup 2026 Fantasy</div>
           <h1 style={S.title}>{myTeam.teamName}</h1>
           <div style={S.subTitle}>
-            {myTeam.formation} formation
+            <select
+              style={S.formationSelect}
+              value={myTeam.formation}
+              onChange={(event) =>
+                setMyTeam((current) => ({
+                  ...current,
+                  formation: event.target.value,
+                }))
+              }
+            >
+              {Object.keys(FORMATIONS).map((formation) => (
+                <option key={formation} value={formation}>
+                  {formation}
+                </option>
+              ))}
+            </select>
             {captain ? ` | C: ${captain.name}` : ""}
             {viceCaptain ? ` | VC: ${viceCaptain.name}` : ""}
           </div>
@@ -151,6 +215,11 @@ export default function App() {
           <Players
             players={players}
             selectedIds={myTeam.players || []}
+            captainId={myTeam.captain}
+            viceCaptainId={myTeam.viceCaptain}
+            onTogglePlayer={togglePlayer}
+            onSetCaptain={setCaptain}
+            onSetViceCaptain={setViceCaptain}
             positionFilter={positionFilter}
             setPositionFilter={setPositionFilter}
             search={search}
@@ -233,6 +302,11 @@ function MyTeam({ players, formation, captainId, viceCaptainId }) {
 function Players({
   players,
   selectedIds,
+  captainId,
+  viceCaptainId,
+  onTogglePlayer,
+  onSetCaptain,
+  onSetViceCaptain,
   positionFilter,
   setPositionFilter,
   search,
@@ -284,6 +358,12 @@ function Players({
             key={player.id}
             player={player}
             selected={selectedIds.includes(player.id)}
+            captain={player.id === captainId}
+            viceCaptain={player.id === viceCaptainId}
+            squadFull={selectedIds.length >= 15}
+            onToggle={() => onTogglePlayer(player.id)}
+            onSetCaptain={() => onSetCaptain(player.id)}
+            onSetViceCaptain={() => onSetViceCaptain(player.id)}
           />
         ))}
       </div>
@@ -493,7 +573,9 @@ function SwitchPanel({ bench, starters }) {
           })}
         </div>
       ) : (
-        <p style={S.vlogMeta}>Add bench players in my-team.json to show switch options.</p>
+        <p style={S.vlogMeta}>
+          Pick up to 15 players from the Players tab to show switch options.
+        </p>
       )}
     </section>
   );
@@ -560,8 +642,18 @@ function EmptyToken({ position }) {
   );
 }
 
-function PlayerRow({ player, selected }) {
+function PlayerRow({
+  player,
+  selected,
+  captain,
+  viceCaptain,
+  squadFull,
+  onToggle,
+  onSetCaptain,
+  onSetViceCaptain,
+}) {
   const [primary, secondary] = getTeamColors(player.teamCode);
+  const addDisabled = !selected && squadFull;
 
   return (
     <article style={{ ...S.playerRow, ...(selected ? S.selectedRow : {}) }}>
@@ -579,6 +671,44 @@ function PlayerRow({ player, selected }) {
         </span>
       </div>
       <div style={S.rowPrice}>${Number(player.price || 0).toFixed(1)}m</div>
+      <div style={S.rowActions}>
+        <button
+          type="button"
+          style={{
+            ...S.actionButton,
+            ...(selected ? S.removeButton : {}),
+            ...(addDisabled ? S.disabledButton : {}),
+          }}
+          disabled={addDisabled}
+          onClick={onToggle}
+        >
+          {selected ? "Remove" : addDisabled ? "Full" : "Add"}
+        </button>
+        {selected && (
+          <>
+            <button
+              type="button"
+              style={{
+                ...S.actionButton,
+                ...(captain ? S.captainButtonActive : {}),
+              }}
+              onClick={onSetCaptain}
+            >
+              {captain ? "Captain" : "Set C"}
+            </button>
+            <button
+              type="button"
+              style={{
+                ...S.actionButton,
+                ...(viceCaptain ? S.viceButtonActive : {}),
+              }}
+              onClick={onSetViceCaptain}
+            >
+              {viceCaptain ? "Vice" : "Set VC"}
+            </button>
+          </>
+        )}
+      </div>
     </article>
   );
 }
@@ -673,6 +803,19 @@ const S = {
   subTitle: {
     color: "#94a3b8",
     fontSize: 13,
+    display: "flex",
+    alignItems: "center",
+    gap: 8,
+    flexWrap: "wrap",
+  },
+  formationSelect: {
+    border: "1px solid rgba(255,255,255,.16)",
+    background: "#101b2d",
+    color: "#ffffff",
+    borderRadius: 8,
+    padding: "5px 8px",
+    fontWeight: 900,
+    outline: "none",
   },
   budgetBox: {
     minWidth: 116,
@@ -1015,6 +1158,41 @@ const S = {
     color: "#86efac",
     fontWeight: 900,
     fontSize: 13,
+    minWidth: 66,
+    textAlign: "right",
+  },
+  rowActions: {
+    display: "flex",
+    gap: 6,
+    flexWrap: "wrap",
+    justifyContent: "flex-end",
+    minWidth: 190,
+  },
+  actionButton: {
+    border: "1px solid rgba(255,255,255,.12)",
+    background: "#17233a",
+    color: "#e5edf7",
+    borderRadius: 8,
+    padding: "7px 9px",
+    fontSize: 11,
+    fontWeight: 900,
+    cursor: "pointer",
+  },
+  removeButton: {
+    background: "rgba(251,113,133,.16)",
+    color: "#fecdd3",
+  },
+  disabledButton: {
+    opacity: 0.45,
+    cursor: "not-allowed",
+  },
+  captainButtonActive: {
+    background: "#facc15",
+    color: "#111827",
+  },
+  viceButtonActive: {
+    background: "#38bdf8",
+    color: "#082f49",
   },
   stageBlock: {
     marginBottom: 18,
