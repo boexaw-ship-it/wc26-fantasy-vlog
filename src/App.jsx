@@ -374,14 +374,25 @@ function EmptyBench({num}) {
 function PlayersView({allPlayers,allSelected,starterPlayers,benchPlayers,captainId,vcId,
   posFilter,setPosFilter,search,setSearch,onAdd,onRemove,onCaptain,onVC,posLimits,totalCount,formation}) {
 
-  const shape = FORMATIONS[formation]||FORMATIONS["4-3-3"];
+  const [teamFilter,setTeamFilter] = useState("All");
+  const [sortPrice,setSortPrice]   = useState(true);
 
-  const filtered = allPlayers.filter(p=>{
-    const mPos = posFilter==="All"||p.position===posFilter;
-    const q = search.trim().toLowerCase();
-    const mSearch = !q||p.name?.toLowerCase().includes(q)||p.fullName?.toLowerCase().includes(q)||p.teamCode?.toLowerCase().includes(q)||p.team?.toLowerCase().includes(q);
-    return mPos&&mSearch;
-  });
+  const teamList = useMemo(()=>{
+    const teams = [...new Set(allPlayers.map(p=>p.teamCode).filter(Boolean))].sort();
+    return teams;
+  },[allPlayers]);
+
+  const filtered = useMemo(()=>{
+    let list = allPlayers.filter(p=>{
+      const mPos  = posFilter==="All"||p.position===posFilter;
+      const mTeam = teamFilter==="All"||p.teamCode===teamFilter;
+      const q     = search.trim().toLowerCase();
+      const mSearch = !q||p.name?.toLowerCase().includes(q)||p.fullName?.toLowerCase().includes(q)||p.teamCode?.toLowerCase().includes(q)||p.team?.toLowerCase().includes(q);
+      return mPos&&mTeam&&mSearch;
+    });
+    if (sortPrice) list = [...list].sort((a,b)=>b.price-a.price);
+    return list;
+  },[allPlayers,posFilter,teamFilter,search,sortPrice]);
 
   return (
     <div style={S.page}>
@@ -394,7 +405,22 @@ function PlayersView({allPlayers,allSelected,starterPlayers,benchPlayers,captain
             </button>
           ))}
         </div>
-        <input style={S.search} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…"/>
+        <div style={{display:"flex",gap:6,flexWrap:"wrap",alignItems:"center"}}>
+          <select style={S.teamSelect} value={teamFilter} onChange={e=>setTeamFilter(e.target.value)}>
+            <option value="All">🌍 All Teams</option>
+            {teamList.map(code=>(
+              <option key={code} value={code}>{code}</option>
+            ))}
+          </select>
+          <button style={{...S.fBtn,...(sortPrice?S.fBtnOn:{})}} onClick={()=>setSortPrice(v=>!v)}>
+            💰 {sortPrice?"Price ↓":"Default"}
+          </button>
+        </div>
+        <input style={S.search} value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search player…"/>
+        <div style={{fontSize:11,color:"#64748b"}}>
+          {filtered.length} players{teamFilter!=="All"?` · ${teamFilter}`:""}
+          {posFilter!=="All"?` · ${posFilter}`:""}
+        </div>
       </div>
 
       <div style={S.playerList}>
@@ -624,6 +650,7 @@ const S = {
   filterGroup:{display:"flex",gap:6,flexWrap:"wrap"},
   fBtn:{background:"#111c2e",border:"1px solid rgba(255,255,255,.1)",color:"#94a3b8",borderRadius:8,padding:"6px 10px",fontSize:11,fontWeight:700,cursor:"pointer"},
   fBtnOn:{background:"#facc15",color:"#07111f",borderColor:"#facc15"},
+  teamSelect:{background:"#111c2e",border:"1px solid rgba(255,255,255,.1)",color:"#fff",borderRadius:8,padding:"6px 10px",fontSize:12,fontWeight:700,outline:"none",cursor:"pointer"},
   search:{background:"#111c2e",border:"1px solid rgba(255,255,255,.1)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:13,outline:"none",width:"100%",boxSizing:"border-box"},
   playerList:{display:"flex",flexDirection:"column",gap:6},
   playerRow:{display:"flex",alignItems:"center",gap:10,background:"#0d1f35",border:"1px solid rgba(255,255,255,.06)",borderRadius:10,padding:"8px 10px"},
