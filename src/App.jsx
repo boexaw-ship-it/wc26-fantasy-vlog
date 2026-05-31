@@ -438,15 +438,9 @@ function PlayersView({allPlayers,allSelected,starterPlayers,benchPlayers,captain
           const isBench   = benchPlayers.some(b=>b.id===p.id);
           const isCap     = p.id===captainId;
           const isVC      = p.id===vcId;
-          const posFull   = totalCount(p.position) >= posLimits[p.position];
-          const squadFull = allSelected.length >= 15;
-          const benchCount = allSelected.length - starterPlayers.length;
-          const benchFull  = benchCount >= 4;
-          const starterMax = p.position==="GK" ? 1 : (FORMATIONS[formation]||FORMATIONS["4-3-3"])[p.position]||0;
-          const goToBench  = totalCount(p.position) >= starterMax;
-          // Can add if: not selected, position limit not reached, squad not full,
-          // and if going to bench — bench not full
-          const canAdd = !selected && !posFull && !squadFull && !(goToBench && benchFull);
+          const posFull    = totalCount(p.position) >= posLimits[p.position];
+          const squadFull  = allSelected.length >= 15;
+          const canAdd     = !selected && !posFull && !squadFull;
 
           return (
             <PlayerRowItem key={p.id} player={p}
