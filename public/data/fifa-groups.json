@@ -3,19 +3,8 @@
     "group": "A",
     "teams": [
       {
-        "name": "Mexico",
-        "code": "MEX",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
-        "name": "South Africa",
-        "code": "RSA",
+        "name": "Czechia",
+        "code": "CZE",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -36,8 +25,19 @@
         "pts": 0
       },
       {
-        "name": "Czechia",
-        "code": "CZE",
+        "name": "Mexico",
+        "code": "MEX",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "South Africa",
+        "code": "RSA",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -52,8 +52,8 @@
     "group": "B",
     "teams": [
       {
-        "name": "Canada",
-        "code": "CAN",
+        "name": "Bosnia and Herzegovina",
+        "code": "BIH",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -63,8 +63,8 @@
         "pts": 0
       },
       {
-        "name": "Bosnia and Herzegovina",
-        "code": "BIH",
+        "name": "Canada",
+        "code": "CAN",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -112,8 +112,8 @@
         "pts": 0
       },
       {
-        "name": "Morocco",
-        "code": "MAR",
+        "name": "Haiti",
+        "code": "HAI",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -123,8 +123,8 @@
         "pts": 0
       },
       {
-        "name": "Haiti",
-        "code": "HAI",
+        "name": "Morocco",
+        "code": "MAR",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -150,8 +150,8 @@
     "group": "D",
     "teams": [
       {
-        "name": "USA",
-        "code": "USA",
+        "name": "Australia",
+        "code": "AUS",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -172,8 +172,8 @@
         "pts": 0
       },
       {
-        "name": "Australia",
-        "code": "AUS",
+        "name": "Türkiye",
+        "code": "TUR",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -183,8 +183,8 @@
         "pts": 0
       },
       {
-        "name": "Türkiye",
-        "code": "TUR",
+        "name": "USA",
+        "code": "USA",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -199,8 +199,8 @@
     "group": "E",
     "teams": [
       {
-        "name": "Germany",
-        "code": "GER",
+        "name": "Côte d'Ivoire",
+        "code": "CIV",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -221,8 +221,8 @@
         "pts": 0
       },
       {
-        "name": "Côte d'Ivoire",
-        "code": "CIV",
+        "name": "Ecuador",
+        "code": "ECU",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -232,8 +232,8 @@
         "pts": 0
       },
       {
-        "name": "Ecuador",
-        "code": "ECU",
+        "name": "Germany",
+        "code": "GER",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -248,8 +248,8 @@
     "group": "F",
     "teams": [
       {
-        "name": "Netherlands",
-        "code": "NED",
+        "name": "Japan",
+        "code": "JPN",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -259,8 +259,8 @@
         "pts": 0
       },
       {
-        "name": "Japan",
-        "code": "JPN",
+        "name": "Netherlands",
+        "code": "NED",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -346,19 +346,8 @@
     "group": "H",
     "teams": [
       {
-        "name": "Spain",
-        "code": "ESP",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
         "name": "Cabo Verde",
-        "code": "",
+        "code": "CPV",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -370,6 +359,17 @@
       {
         "name": "Saudi Arabia",
         "code": "KSA",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
+      },
+      {
+        "name": "Spain",
+        "code": "ESP",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -406,17 +406,6 @@
         "pts": 0
       },
       {
-        "name": "Senegal",
-        "code": "SEN",
-        "played": 0,
-        "won": 0,
-        "drawn": 0,
-        "lost": 0,
-        "gf": 0,
-        "ga": 0,
-        "pts": 0
-      },
-      {
         "name": "Iraq",
         "code": "IRQ",
         "played": 0,
@@ -437,6 +426,17 @@
         "gf": 0,
         "ga": 0,
         "pts": 0
+      },
+      {
+        "name": "Senegal",
+        "code": "SEN",
+        "played": 0,
+        "won": 0,
+        "drawn": 0,
+        "lost": 0,
+        "gf": 0,
+        "ga": 0,
+        "pts": 0
       }
     ]
   },
@@ -444,8 +444,8 @@
     "group": "J",
     "teams": [
       {
-        "name": "Argentina",
-        "code": "ARG",
+        "name": "Algeria",
+        "code": "ALG",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -455,8 +455,8 @@
         "pts": 0
       },
       {
-        "name": "Algeria",
-        "code": "ALG",
+        "name": "Argentina",
+        "code": "ARG",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -493,8 +493,8 @@
     "group": "K",
     "teams": [
       {
-        "name": "Portugal",
-        "code": "POR",
+        "name": "Colombia",
+        "code": "COL",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -515,8 +515,8 @@
         "pts": 0
       },
       {
-        "name": "Uzbekistan",
-        "code": "UZB",
+        "name": "Portugal",
+        "code": "POR",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -526,8 +526,8 @@
         "pts": 0
       },
       {
-        "name": "Colombia",
-        "code": "COL",
+        "name": "Uzbekistan",
+        "code": "UZB",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -542,8 +542,8 @@
     "group": "L",
     "teams": [
       {
-        "name": "England",
-        "code": "ENG",
+        "name": "Croatia",
+        "code": "CRO",
         "played": 0,
         "won": 0,
         "drawn": 0,
@@ -553,8 +553,8 @@
         "pts": 0
       },
       {
-        "name": "Croatia",
-        "code": "CRO",
+        "name": "England",
+        "code": "ENG",
         "played": 0,
         "won": 0,
         "drawn": 0,
