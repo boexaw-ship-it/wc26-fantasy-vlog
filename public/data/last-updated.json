@@ -1,10 +1,8 @@
 {
-  "source": "https://play.fifa.com/fantasy/es/team",
-  "updatedAt": "2026-05-29T12:38:59.692Z",
-  "parsedPlayers": 91,
-  "parsedFixtures": 96,
-  "totalPlayers": 91,
+  "source": "https://play.fifa.com/fantasy/es/fixtures",
+  "updatedAt": "2026-05-31T08:36:21.184Z",
+  "totalPlayers": 64,
   "totalFixtures": 96,
   "totalGroups": 12,
-  "note": "Official FIFA Fantasy page rendered with Playwright. Debug text is saved to fifa-debug.txt."
+  "note": "Players: official WC2026 fantasy fallback list (update points manually after each match week). Fixtures: scraped from FIFA Fantasy site."
 }
