@@ -102,22 +102,22 @@ export default function App() {
   function totalCount(pos)   { return starterCount(pos)+benchCount(pos); }
 
   // Add player — starter first, bench if starter slot full
-  // Squad limits are fixed: GK×2, DEF×5, MID×5, FWD×3 (total 15 = 11 starters + 4 bench)
+  // Squad limits: GK×2, DEF×5, MID×5, FWD×3 (total 15 = 11 starters + 4 bench)
   function addPlayer(pid) {
     const player = allPlayers.find(p=>p.id===pid);
     if (!player || allSelected.includes(pid)) return;
 
     const pos = player.position;
 
-    // Hard squad position limit
+    // Hard position squad limit (e.g. max 5 DEF total)
     if (totalCount(pos) >= POS_LIMITS[pos]) return;
 
-    // Hard total limit
+    // Hard total squad limit
     if (allSelected.length >= 15) return;
 
     const shape      = FORMATIONS[team.formation] || FORMATIONS["4-3-3"];
     const starterMax = pos === "GK" ? 1 : (shape[pos] || 0);
-    const canStarter = starterCount(pos) < starterMax;
+    const canStarter = starterCount(pos) < starterMax && team.starters.length < 11;
     const canBench   = team.bench.length < 4;
 
     setTeam(prev => {
