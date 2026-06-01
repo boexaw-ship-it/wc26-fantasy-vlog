@@ -311,7 +311,8 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,onCl
       {isVC &&<div style={S.vcBadge}>VC</div>}
 
       {/* Jersey */}
-      <div style={{cursor:"pointer",display:"flex",justifyContent:"center"}} onClick={()=>setMenu(!menu)}>
+      <div style={{cursor:"pointer",display:"flex",justifyContent:"center"}} onClick={isSwapTarget ? onClick : ()=>setMenu(!menu)}>
+
         <Jersey primary={pri} secondary={sec} number={player.jerseyNumber||"?"} size={isStarter?52:44}/>
       </div>
 
@@ -334,14 +335,14 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,onCl
       {/* Context menu */}
       {menu&&(
         <div style={S.ctxMenu} onClick={e=>e.stopPropagation()}>
-          <div style={S.ctxItem} onClick={()=>{onClick();setMenu(false);}}>↔ Swap</div>
-          <div style={S.ctxItem} onClick={()=>{onCaptain();setMenu(false);}}>
+          <div style={S.ctxItem} onClick={e=>{e.stopPropagation();onClick();setMenu(false);}}>↔ Swap</div>
+          <div style={S.ctxItem} onClick={e=>{e.stopPropagation();onCaptain();setMenu(false);}}>
             {isCap?"Remove Captain":"⭐ Captain (×2)"}
           </div>
-          <div style={S.ctxItem} onClick={()=>{onVC();setMenu(false);}}>
+          <div style={S.ctxItem} onClick={e=>{e.stopPropagation();onVC();setMenu(false);}}>
             {isVC?"Remove Vice-Cap":"🔵 Vice-Captain"}
           </div>
-          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={()=>{onRemove();setMenu(false);}}>✕ Remove</div>
+          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={e=>{e.stopPropagation();onRemove();setMenu(false);}}>✕ Remove</div>
           <div style={{...S.ctxItem,opacity:.4}} onClick={()=>setMenu(false)}>Cancel</div>
         </div>
       )}
