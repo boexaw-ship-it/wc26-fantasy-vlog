@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, useRef } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 const FORMATIONS = {
   "3-4-3":{ DEF:3,MID:4,FWD:3 }, "3-5-2":{ DEF:3,MID:5,FWD:2 },
@@ -307,75 +307,28 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
   const [pri,sec]=getColors(player.teamCode);
   const basePts=Number(player.points||0);
 
-  // Prevent double-fire on mobile (touchend + click)
-  const touched = useRef(false);
-  const handleCardTap = (e) => {
-    e.stopPropagation();
-    // If in swap mode and this is a target, complete the swap
-    if (isSwapTarget) {
-      onClick();
-      return;
-    }
-    // Otherwise toggle this card's menu
-    onMenuToggle(player.id);
-  };
-
-  const handleTouch = (e) => {
-    e.preventDefault();
-    e.stopPropagation();
-    touched.current = true;
-    handleCardTap(e);
-    // Reset after a short delay
-    setTimeout(() => { touched.current = false; }, 300);
-  };
-
-  const handleClickSafe = (e) => {
-    // Skip if already handled by touch
-    if (touched.current) { e.stopPropagation(); return; }
-    handleCardTap(e);
-  };
-
-  // Handle menu action - prevent double fire
-  const menuTouched = useRef(false);
-  const handleAction = (e, action) => {
-    e.preventDefault();
-    e.stopPropagation();
-    action();
-  };
-  const handleMenuTouch = (e, action) => {
-    e.preventDefault();
-    e.stopPropagation();
-    menuTouched.current = true;
-    action();
-    setTimeout(() => { menuTouched.current = false; }, 300);
-  };
-  const handleMenuClick = (e, action) => {
-    if (menuTouched.current) { e.stopPropagation(); return; }
-    e.stopPropagation();
-    action();
-  };
-
   return (
     <div style={{
       ...S.card,
       ...(isStarter?S.cardStarter:S.cardBench),
       ...(isSwapSrc?{boxShadow:"0 0 0 2px #60a5fa, 0 4px 20px rgba(96,165,250,.4)"}:{}),
       ...(isSwapTarget?{boxShadow:"0 0 0 2px #fbbf24",opacity:.8}:{}),
-    }}
-    onClick={handleClickSafe}
-    onTouchEnd={handleTouch}
-    >
+    }}>
       {/* C / VC badge */}
       {isCap&&<div style={S.capBadge}>C</div>}
       {isVC &&<div style={S.vcBadge}>VC</div>}
 
-      {/* Jersey */}
-      <div style={{display:"flex",justifyContent:"center",pointerEvents:"none"}}>
+      {/* Jersey - tap target */}
+      <button style={{...S.cardTapBtn}} onClick={(e)=>{
+        e.stopPropagation();
+        if(isSwapTarget){onClick();return;}
+        onMenuToggle(player.id);
+      }}>
         <Jersey primary={pri} secondary={sec} number={player.jerseyNumber||"?"} size={isStarter?52:44}/>
-      </div>
+      </button>
 
       {/* Info */}
-      <div style={{...S.cardInfo,pointerEvents:"none"}}>
+      <div style={S.cardInfo}>
         <div style={S.cardName}>{player.name}</div>
         <div style={S.cardMeta}>
           <span style={{...S.posBadge,background:POS_BG[player.position]||"#374151"}}>{player.position}</span>
@@ -392,27 +345,22 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
 
       {/* Context menu - controlled by parent */}
       {menuOpen&&(
-        <div style={S.ctxMenu} onClick={e=>e.stopPropagation()} onTouchEnd={e=>e.stopPropagation()}>
-          <div style={S.ctxItem} onClick={e=>handleMenuClick(e,()=>{onClick();onMenuToggle(null);})}
-               onTouchEnd={e=>handleMenuTouch(e,()=>{onClick();onMenuToggle(null);})}>
+        <div style={S.ctxMenu}>
+          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onClick();onMenuToggle(null);}}>
             ↔ Swap
-          </div>
-          <div style={S.ctxItem} onClick={e=>handleMenuClick(e,onCaptain)}
-               onTouchEnd={e=>handleMenuTouch(e,onCaptain)}>
+          </button>
+          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onCaptain();}}>
             {isCap?"Remove Captain":"⭐ Captain (×2)"}
-          </div>
-          <div style={S.ctxItem} onClick={e=>handleMenuClick(e,onVC)}
-               onTouchEnd={e=>handleMenuTouch(e,onVC)}>
+          </button>
+          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onVC();}}>
             {isVC?"Remove Vice-Cap":"🔵 Vice-Captain"}
-          </div>
-          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={e=>handleMenuClick(e,onRemove)}
-               onTouchEnd={e=>handleMenuTouch(e,onRemove)}>
+          </button>
+          <button style={{...S.ctxBtn,color:"#fb7185"}} onClick={(e)=>{e.stopPropagation();onRemove();}}>
             ✕ Remove
-          </div>
-          <div style={{...S.ctxItem,opacity:.4}} onClick={e=>{if(menuTouched.current){e.stopPropagation();return;}e.stopPropagation();onMenuToggle(null);}}
-               onTouchEnd={e=>{e.preventDefault();e.stopPropagation();menuTouched.current=true;onMenuToggle(null);setTimeout(()=>{menuTouched.current=false;},300);}}>
+          </button>
+          <button style={{...S.ctxBtn,opacity:.6}} onClick={(e)=>{e.stopPropagation();onMenuToggle(null);}}>
             Cancel
-          </div>
+          </button>
         </div>
       )}
     </div>
@@ -754,8 +702,9 @@ const S = {
   x2:       {background:"#92400e",color:"#fef3c7",fontSize:7,fontWeight:900,borderRadius:3,padding:"0 3px",marginLeft:2},
   capBadge: {position:"absolute",top:-6,right:-4,background:"#f59e0b",color:"#000",fontSize:8,fontWeight:900,borderRadius:99,width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 2px 6px rgba(0,0,0,.5)"},
   vcBadge:  {position:"absolute",top:-6,right:-4,background:"#3b82f6",color:"#fff",fontSize:8,fontWeight:900,borderRadius:99,width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 2px 6px rgba(0,0,0,.5)"},
+  cardTapBtn:{background:"none",border:"none",padding:0,margin:0,cursor:"pointer",display:"flex",justifyContent:"center",width:"100%",touchAction:"manipulation",WebkitTapHighlightColor:"transparent"},
   ctxMenu:  {position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",background:"#111827",border:"1px solid #374151",borderRadius:10,overflow:"hidden",zIndex:999,boxShadow:"0 12px 40px rgba(0,0,0,.9)",minWidth:160,marginTop:4},
-  ctxItem:  {padding:"12px 14px",fontSize:13,fontWeight:600,cursor:"pointer",borderBottom:"1px solid #1f2937",whiteSpace:"nowrap",touchAction:"manipulation",userSelect:"none"},
+  ctxBtn:   {display:"block",width:"100%",background:"none",border:"none",padding:"12px 14px",fontSize:13,fontWeight:600,color:"#e5edf7",cursor:"pointer",borderBottom:"1px solid #1f2937",whiteSpace:"nowrap",textAlign:"left",touchAction:"manipulation",WebkitTapHighlightColor:"transparent"},
 
   benchHead:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"8px 0 6px"},
   benchRow: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10},
