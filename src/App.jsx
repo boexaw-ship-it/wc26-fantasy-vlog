@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 
 const FORMATIONS = {
   "3-4-3":{ DEF:3,MID:4,FWD:3 }, "3-5-2":{ DEF:3,MID:5,FWD:2 },
@@ -307,9 +307,9 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
   const [pri,sec]=getColors(player.teamCode);
   const basePts=Number(player.points||0);
 
-  // Handle card tap
+  // Prevent double-fire on mobile (touchend + click)
+  const touched = useRef(false);
   const handleCardTap = (e) => {
-    e.preventDefault();
     e.stopPropagation();
     // If in swap mode and this is a target, complete the swap
     if (isSwapTarget) {
@@ -320,9 +320,37 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
     onMenuToggle(player.id);
   };
 
-  // Handle menu action
+  const handleTouch = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    touched.current = true;
+    handleCardTap(e);
+    // Reset after a short delay
+    setTimeout(() => { touched.current = false; }, 300);
+  };
+
+  const handleClickSafe = (e) => {
+    // Skip if already handled by touch
+    if (touched.current) { e.stopPropagation(); return; }
+    handleCardTap(e);
+  };
+
+  // Handle menu action - prevent double fire
+  const menuTouched = useRef(false);
   const handleAction = (e, action) => {
     e.preventDefault();
+    e.stopPropagation();
+    action();
+  };
+  const handleMenuTouch = (e, action) => {
+    e.preventDefault();
+    e.stopPropagation();
+    menuTouched.current = true;
+    action();
+    setTimeout(() => { menuTouched.current = false; }, 300);
+  };
+  const handleMenuClick = (e, action) => {
+    if (menuTouched.current) { e.stopPropagation(); return; }
     e.stopPropagation();
     action();
   };
@@ -334,8 +362,8 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
       ...(isSwapSrc?{boxShadow:"0 0 0 2px #60a5fa, 0 4px 20px rgba(96,165,250,.4)"}:{}),
       ...(isSwapTarget?{boxShadow:"0 0 0 2px #fbbf24",opacity:.8}:{}),
     }}
-    onClick={handleCardTap}
-    onTouchEnd={handleCardTap}
+    onClick={handleClickSafe}
+    onTouchEnd={handleTouch}
     >
       {/* C / VC badge */}
       {isCap&&<div style={S.capBadge}>C</div>}
@@ -365,24 +393,24 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
       {/* Context menu - controlled by parent */}
       {menuOpen&&(
         <div style={S.ctxMenu} onClick={e=>e.stopPropagation()} onTouchEnd={e=>e.stopPropagation()}>
-          <div style={S.ctxItem} onClick={e=>handleAction(e,()=>{onClick();onMenuToggle(null);})}
-               onTouchEnd={e=>handleAction(e,()=>{onClick();onMenuToggle(null);})}>
+          <div style={S.ctxItem} onClick={e=>handleMenuClick(e,()=>{onClick();onMenuToggle(null);})}
+               onTouchEnd={e=>handleMenuTouch(e,()=>{onClick();onMenuToggle(null);})}>
             ↔ Swap
           </div>
-          <div style={S.ctxItem} onClick={e=>handleAction(e,onCaptain)}
-               onTouchEnd={e=>handleAction(e,onCaptain)}>
+          <div style={S.ctxItem} onClick={e=>handleMenuClick(e,onCaptain)}
+               onTouchEnd={e=>handleMenuTouch(e,onCaptain)}>
             {isCap?"Remove Captain":"⭐ Captain (×2)"}
           </div>
-          <div style={S.ctxItem} onClick={e=>handleAction(e,onVC)}
-               onTouchEnd={e=>handleAction(e,onVC)}>
+          <div style={S.ctxItem} onClick={e=>handleMenuClick(e,onVC)}
+               onTouchEnd={e=>handleMenuTouch(e,onVC)}>
             {isVC?"Remove Vice-Cap":"🔵 Vice-Captain"}
           </div>
-          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={e=>handleAction(e,onRemove)}
-               onTouchEnd={e=>handleAction(e,onRemove)}>
+          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={e=>handleMenuClick(e,onRemove)}
+               onTouchEnd={e=>handleMenuTouch(e,onRemove)}>
             ✕ Remove
           </div>
-          <div style={{...S.ctxItem,opacity:.4}} onClick={e=>{e.stopPropagation();onMenuToggle(null);}}
-               onTouchEnd={e=>{e.preventDefault();e.stopPropagation();onMenuToggle(null);}}>
+          <div style={{...S.ctxItem,opacity:.4}} onClick={e=>{if(menuTouched.current){e.stopPropagation();return;}e.stopPropagation();onMenuToggle(null);}}
+               onTouchEnd={e=>{e.preventDefault();e.stopPropagation();menuTouched.current=true;onMenuToggle(null);setTimeout(()=>{menuTouched.current=false;},300);}}>
             Cancel
           </div>
         </div>
