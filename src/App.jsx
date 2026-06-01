@@ -102,25 +102,29 @@ export default function App() {
   function totalCount(pos)   { return starterCount(pos)+benchCount(pos); }
 
   // Add player — starter first, bench if starter slot full
-  // Squad limits: GK×2, DEF×5, MID×5, FWD×3 (total 15 = 11 starters + 4 bench)
+  // Fixed squad: GK×2, DEF×5, MID×5, FWD×3 = 15 total (11 starters + 4 bench)
   function addPlayer(pid) {
     const player = allPlayers.find(p=>p.id===pid);
     if (!player || allSelected.includes(pid)) return;
 
     const pos = player.position;
 
-    // Hard position squad limit (e.g. max 5 DEF total)
+    // Position limit check (GK2/DEF5/MID5/FWD3)
     if (totalCount(pos) >= POS_LIMITS[pos]) return;
 
-    // Hard total squad limit
+    // Total squad limit
     if (allSelected.length >= 15) return;
 
-    const shape      = FORMATIONS[team.formation] || FORMATIONS["4-3-3"];
-    const starterMax = pos === "GK" ? 1 : (shape[pos] || 0);
-    const canStarter = starterCount(pos) < starterMax && team.starters.length < 11;
-    const canBench   = team.bench.length < 4;
-
     setTeam(prev => {
+      const shape      = FORMATIONS[prev.formation] || FORMATIONS["4-3-3"];
+      const starterMax = pos === "GK" ? 1 : (shape[pos] || 0);
+      const curStarter = prev.starters.filter(id => {
+        const p = allPlayers.find(x=>x.id===id);
+        return p && p.position === pos;
+      }).length;
+      const canStarter = curStarter < starterMax && prev.starters.length < 11;
+      const canBench   = prev.bench.length < 4;
+
       if (canStarter) return { ...prev, starters: [...prev.starters, pid] };
       if (canBench)   return { ...prev, bench:    [...prev.bench,    pid] };
       return prev;
@@ -438,9 +442,15 @@ function PlayersView({allPlayers,allSelected,starterPlayers,benchPlayers,captain
           const isBench   = benchPlayers.some(b=>b.id===p.id);
           const isCap     = p.id===captainId;
           const isVC      = p.id===vcId;
-          const posFull    = totalCount(p.position) >= posLimits[p.position];
-          const squadFull  = allSelected.length >= 15;
-          const canAdd     = !selected && !posFull && !squadFull;
+          const posFull   = totalCount(p.position) >= posLimits[p.position];
+          const squadFull = allSelected.length >= 15;
+          // Check if can go to starter OR bench
+          const shape2     = FORMATIONS[formation] || FORMATIONS["4-3-3"];
+          const sMax       = p.position==="GK" ? 1 : (shape2[p.position]||0);
+          const sCur       = starterPlayers.filter(s=>s.position===p.position).length;
+          const goStarter  = sCur < sMax && starterPlayers.length < 11;
+          const goBench    = benchPlayers.length < 4;
+          const canAdd     = !selected && !posFull && !squadFull && (goStarter || goBench);
 
           return (
             <PlayerRowItem key={p.id} player={p}
