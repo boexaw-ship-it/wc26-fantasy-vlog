@@ -212,6 +212,7 @@ function Header({team,budgetLeft,totalCost,squadCount,totalPoints,captain,vc,onF
 // ── MY TEAM ───────────────────────────────────────────────────────────────────
 function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap,onRemove,onCaptain,onVC}) {
   const [swapSrc,setSwapSrc]=useState(null);
+  const [activeMenu,setActiveMenu]=useState(null); // track which player's menu is open
   const shape=FORMATIONS[formation]||FORMATIONS["4-3-3"];
   const rows=POS_ORDER.map(pos=>({
     pos,players:starterPlayers.filter(p=>p.position===pos),slots:pos==="GK"?1:shape[pos],
@@ -257,8 +258,12 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
                     pts={playerPoints(p,captainId)}
                     isSwapSrc={swapSrc?.id===p.id}
                     isSwapTarget={!!swapSrc&&swapSrc.id!==p.id}
+                    menuOpen={activeMenu===p.id}
+                    onMenuToggle={(id)=>setActiveMenu(activeMenu===id?null:id)}
                     onClick={()=>handleClick(p.id,true)}
-                    onCaptain={()=>onCaptain(p.id)} onVC={()=>onVC(p.id)} onRemove={()=>onRemove(p.id)}/>
+                    onCaptain={()=>{onCaptain(p.id);setActiveMenu(null);}}
+                    onVC={()=>{onVC(p.id);setActiveMenu(null);}}
+                    onRemove={()=>{onRemove(p.id);setActiveMenu(null);}}/>
                 :<EmptyCard key={`${pos}-${i}`} pos={pos}/>;
             })}
           </div>
@@ -279,8 +284,12 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
                 pts={playerPoints(p,captainId)}
                 isSwapSrc={swapSrc?.id===p.id}
                 isSwapTarget={!!swapSrc&&swapSrc.id!==p.id}
+                menuOpen={activeMenu===p.id}
+                onMenuToggle={(id)=>setActiveMenu(activeMenu===id?null:id)}
                 onClick={()=>handleClick(p.id,false)}
-                onCaptain={()=>onCaptain(p.id)} onVC={()=>onVC(p.id)} onRemove={()=>onRemove(p.id)}/>
+                onCaptain={()=>{onCaptain(p.id);setActiveMenu(null);}}
+                onVC={()=>{onVC(p.id);setActiveMenu(null);}}
+                onRemove={()=>{onRemove(p.id);setActiveMenu(null);}}/>
             :<EmptyBenchCard key={`bench-${i}`} num={i+1}/>;
         })}
       </div>
@@ -294,10 +303,29 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
 }
 
 // ── PLAYER CARD (pitch + bench) ───────────────────────────────────────────────
-function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,onClick,onCaptain,onVC,onRemove}) {
-  const [menu,setMenu]=useState(false);
+function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menuOpen,onMenuToggle,onClick,onCaptain,onVC,onRemove}) {
   const [pri,sec]=getColors(player.teamCode);
   const basePts=Number(player.points||0);
+
+  // Handle card tap
+  const handleCardTap = (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // If in swap mode and this is a target, complete the swap
+    if (isSwapTarget) {
+      onClick();
+      return;
+    }
+    // Otherwise toggle this card's menu
+    onMenuToggle(player.id);
+  };
+
+  // Handle menu action
+  const handleAction = (e, action) => {
+    e.preventDefault();
+    e.stopPropagation();
+    action();
+  };
 
   return (
     <div style={{
@@ -305,19 +333,21 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,onCl
       ...(isStarter?S.cardStarter:S.cardBench),
       ...(isSwapSrc?{boxShadow:"0 0 0 2px #60a5fa, 0 4px 20px rgba(96,165,250,.4)"}:{}),
       ...(isSwapTarget?{boxShadow:"0 0 0 2px #fbbf24",opacity:.8}:{}),
-    }}>
+    }}
+    onClick={handleCardTap}
+    onTouchEnd={handleCardTap}
+    >
       {/* C / VC badge */}
       {isCap&&<div style={S.capBadge}>C</div>}
       {isVC &&<div style={S.vcBadge}>VC</div>}
 
       {/* Jersey */}
-      <div style={{cursor:"pointer",display:"flex",justifyContent:"center"}} onClick={isSwapTarget ? onClick : ()=>setMenu(!menu)}>
-
+      <div style={{display:"flex",justifyContent:"center",pointerEvents:"none"}}>
         <Jersey primary={pri} secondary={sec} number={player.jerseyNumber||"?"} size={isStarter?52:44}/>
       </div>
 
       {/* Info */}
-      <div style={S.cardInfo}>
+      <div style={{...S.cardInfo,pointerEvents:"none"}}>
         <div style={S.cardName}>{player.name}</div>
         <div style={S.cardMeta}>
           <span style={{...S.posBadge,background:POS_BG[player.position]||"#374151"}}>{player.position}</span>
@@ -332,18 +362,29 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,onCl
         <div style={S.cardFix}>{player.nextFixture||""}</div>
       </div>
 
-      {/* Context menu */}
-      {menu&&(
-        <div style={S.ctxMenu} onClick={e=>e.stopPropagation()}>
-          <div style={S.ctxItem} onClick={e=>{e.stopPropagation();onClick();setMenu(false);}}>↔ Swap</div>
-          <div style={S.ctxItem} onClick={e=>{e.stopPropagation();onCaptain();setMenu(false);}}>
+      {/* Context menu - controlled by parent */}
+      {menuOpen&&(
+        <div style={S.ctxMenu} onClick={e=>e.stopPropagation()} onTouchEnd={e=>e.stopPropagation()}>
+          <div style={S.ctxItem} onClick={e=>handleAction(e,()=>{onClick();onMenuToggle(null);})}
+               onTouchEnd={e=>handleAction(e,()=>{onClick();onMenuToggle(null);})}>
+            ↔ Swap
+          </div>
+          <div style={S.ctxItem} onClick={e=>handleAction(e,onCaptain)}
+               onTouchEnd={e=>handleAction(e,onCaptain)}>
             {isCap?"Remove Captain":"⭐ Captain (×2)"}
           </div>
-          <div style={S.ctxItem} onClick={e=>{e.stopPropagation();onVC();setMenu(false);}}>
+          <div style={S.ctxItem} onClick={e=>handleAction(e,onVC)}
+               onTouchEnd={e=>handleAction(e,onVC)}>
             {isVC?"Remove Vice-Cap":"🔵 Vice-Captain"}
           </div>
-          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={e=>{e.stopPropagation();onRemove();setMenu(false);}}>✕ Remove</div>
-          <div style={{...S.ctxItem,opacity:.4}} onClick={()=>setMenu(false)}>Cancel</div>
+          <div style={{...S.ctxItem,color:"#fb7185"}} onClick={e=>handleAction(e,onRemove)}
+               onTouchEnd={e=>handleAction(e,onRemove)}>
+            ✕ Remove
+          </div>
+          <div style={{...S.ctxItem,opacity:.4}} onClick={e=>{e.stopPropagation();onMenuToggle(null);}}
+               onTouchEnd={e=>{e.preventDefault();e.stopPropagation();onMenuToggle(null);}}>
+            Cancel
+          </div>
         </div>
       )}
     </div>
@@ -583,6 +624,7 @@ function VlogView({starterPlayers,benchPlayers,formation,teamName,captainId,vcId
                     isCap={p.id===captainId} isVC={p.id===vcId}
                     pts={playerPoints(p,captainId)}
                     isSwapSrc={false} isSwapTarget={false}
+                    menuOpen={false} onMenuToggle={()=>{}}
                     onClick={()=>{}} onCaptain={()=>{}} onVC={()=>{}} onRemove={()=>{}}/>
                 :<EmptyCard key={`${pos}-${i}`} pos={pos}/>;
             })}
@@ -600,6 +642,7 @@ function VlogView({starterPlayers,benchPlayers,formation,teamName,captainId,vcId
                 isCap={p.id===captainId} isVC={p.id===vcId}
                 pts={playerPoints(p,captainId)}
                 isSwapSrc={false} isSwapTarget={false}
+                menuOpen={false} onMenuToggle={()=>{}}
                 onClick={()=>{}} onCaptain={()=>{}} onVC={()=>{}} onRemove={()=>{}}/>
             :<EmptyBenchCard key={`bench-${i}`} num={i+1}/>;
         })}
@@ -661,12 +704,12 @@ const S = {
   swapBanner:{background:"#1e3a5f",border:"1px solid #3b82f6",borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:12,color:"#93c5fd",display:"flex",justifyContent:"space-between",alignItems:"center"},
   cancelBtn:{background:"#1d4ed8",border:"none",color:"#fff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:12},
 
-  pitch:    {position:"relative",overflow:"hidden",minHeight:460,padding:"16px 4px",borderRadius:14,background:"linear-gradient(180deg,#0d4e1c 0%,#0f6024 45%,#0f6024 55%,#0d4e1c 100%)",boxShadow:"inset 0 0 40px rgba(0,0,0,.4)",marginBottom:14},
+  pitch:    {position:"relative",overflow:"visible",minHeight:460,padding:"16px 4px",borderRadius:14,background:"linear-gradient(180deg,#0d4e1c 0%,#0f6024 45%,#0f6024 55%,#0d4e1c 100%)",boxShadow:"inset 0 0 40px rgba(0,0,0,.4)",marginBottom:14},
   pitchSvg: {position:"absolute",inset:0,width:"100%",height:"100%",stroke:"rgba(255,255,255,.12)",strokeWidth:".6",pointerEvents:"none"},
   pitchRow: {display:"flex",justifyContent:"center",gap:6,marginBottom:4,position:"relative",zIndex:1,flexWrap:"wrap"},
 
   // Player card
-  card:     {display:"flex",flexDirection:"column",alignItems:"center",position:"relative",cursor:"pointer",borderRadius:10,overflow:"visible"},
+  card:     {display:"flex",flexDirection:"column",alignItems:"center",position:"relative",cursor:"pointer",borderRadius:10,overflow:"visible",touchAction:"manipulation"},
   cardStarter:{width:88,padding:"6px 4px 4px",background:"rgba(0,0,0,.45)",backdropFilter:"blur(4px)",border:"1px solid rgba(255,255,255,.1)"},
   cardBench:{width:"100%",padding:"8px 6px 6px",background:"#0d1f35",border:"1px solid rgba(255,255,255,.08)"},
   cardEmpty:{cursor:"default",opacity:.45},
@@ -683,8 +726,8 @@ const S = {
   x2:       {background:"#92400e",color:"#fef3c7",fontSize:7,fontWeight:900,borderRadius:3,padding:"0 3px",marginLeft:2},
   capBadge: {position:"absolute",top:-6,right:-4,background:"#f59e0b",color:"#000",fontSize:8,fontWeight:900,borderRadius:99,width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 2px 6px rgba(0,0,0,.5)"},
   vcBadge:  {position:"absolute",top:-6,right:-4,background:"#3b82f6",color:"#fff",fontSize:8,fontWeight:900,borderRadius:99,width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 2px 6px rgba(0,0,0,.5)"},
-  ctxMenu:  {position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",background:"#111827",border:"1px solid #374151",borderRadius:10,overflow:"hidden",zIndex:99,boxShadow:"0 12px 40px rgba(0,0,0,.9)",minWidth:160,marginTop:4},
-  ctxItem:  {padding:"9px 14px",fontSize:12,fontWeight:600,cursor:"pointer",borderBottom:"1px solid #1f2937",whiteSpace:"nowrap"},
+  ctxMenu:  {position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",background:"#111827",border:"1px solid #374151",borderRadius:10,overflow:"hidden",zIndex:999,boxShadow:"0 12px 40px rgba(0,0,0,.9)",minWidth:160,marginTop:4},
+  ctxItem:  {padding:"12px 14px",fontSize:13,fontWeight:600,cursor:"pointer",borderBottom:"1px solid #1f2937",whiteSpace:"nowrap",touchAction:"manipulation",userSelect:"none"},
 
   benchHead:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"8px 0 6px"},
   benchRow: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10},
