@@ -213,17 +213,31 @@ function Header({team,budgetLeft,totalCost,squadCount,totalPoints,captain,vc,onF
 function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap,onRemove,onCaptain,onVC}) {
   const [swapSrc,setSwapSrc]=useState(null);
   const [activeMenu,setActiveMenu]=useState(null); // track which player's menu is open
+  const [swapError,setSwapError]=useState(""); // Fix: feedback for invalid swaps
   const shape=FORMATIONS[formation]||FORMATIONS["4-3-3"];
   const rows=POS_ORDER.map(pos=>({
     pos,players:starterPlayers.filter(p=>p.position===pos),slots:pos==="GK"?1:shape[pos],
   }));
 
+  // Fix 1: close any open menu before entering swap mode; show error for same-type swaps
   const handleClick=(pid,isStarter)=>{
-    if (!swapSrc){setSwapSrc({id:pid,isStarter});return;}
-    if (swapSrc.id===pid){setSwapSrc(null);return;}
+    if (!swapSrc){
+      setActiveMenu(null); // close menu before entering swap mode
+      setSwapSrc({id:pid,isStarter});
+      setSwapError("");
+      return;
+    }
+    if (swapSrc.id===pid){setSwapSrc(null);setSwapError("");return;}
+    if (swapSrc.isStarter===isStarter){
+      // same type — show helpful error instead of silently failing
+      setSwapError(isStarter?"Can only swap a starter with a bench player.":"Can only swap a bench player with a starter.");
+      setSwapSrc(null);
+      return;
+    }
     if (swapSrc.isStarter&&!isStarter) onSwap(swapSrc.id,pid);
-    else if (!swapSrc.isStarter&&isStarter) onSwap(pid,swapSrc.id);
+    else onSwap(pid,swapSrc.id);
     setSwapSrc(null);
+    setSwapError("");
   };
 
   const starterPts=starterPlayers.reduce((s,p)=>s+playerPoints(p,captainId),0);
@@ -240,8 +254,14 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
 
       {swapSrc&&(
         <div style={S.swapBanner}>
-          ↔ Swap mode — tap another player
-          <button style={S.cancelBtn} onClick={()=>setSwapSrc(null)}>Cancel</button>
+          ↔ Swap mode — tap a {swapSrc.isStarter?"bench":"starter"} player
+          <button style={S.cancelBtn} onClick={()=>{setSwapSrc(null);setSwapError("");}}>Cancel</button>
+        </div>
+      )}
+      {swapError&&!swapSrc&&(
+        <div style={{...S.swapBanner,background:"#3b1a1a",borderColor:"#ef4444",color:"#fca5a5",justifyContent:"space-between"}}>
+          ⚠ {swapError}
+          <button style={{...S.cancelBtn,background:"#7f1d1d"}} onClick={()=>setSwapError("")}>OK</button>
         </div>
       )}
 
@@ -346,16 +366,24 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
       {/* Context menu - controlled by parent */}
       {menuOpen&&(
         <div style={S.ctxMenu}>
-          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onClick();onMenuToggle(null);}}>
+          {/* Fix: close menu first, then enter swap mode so state is clean */}
+          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onMenuToggle(null);setTimeout(()=>onClick(),0);}}>
             ↔ Swap
           </button>
-          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onCaptain();}}>
-            {isCap?"Remove Captain":"⭐ Captain (×2)"}
+          {/* Fix: use onPointerDown for reliable touch response before menu can dismiss */}
+          <button style={S.ctxBtn}
+            onPointerDown={(e)=>{e.stopPropagation();onCaptain();}}
+            onClick={(e)=>e.stopPropagation()}>
+            {isCap?"✕ Remove Captain":"⭐ Captain (×2)"}
           </button>
-          <button style={S.ctxBtn} onClick={(e)=>{e.stopPropagation();onVC();}}>
-            {isVC?"Remove Vice-Cap":"🔵 Vice-Captain"}
+          <button style={S.ctxBtn}
+            onPointerDown={(e)=>{e.stopPropagation();onVC();}}
+            onClick={(e)=>e.stopPropagation()}>
+            {isVC?"✕ Remove Vice-Cap":"🔵 Vice-Captain"}
           </button>
-          <button style={{...S.ctxBtn,color:"#fb7185"}} onClick={(e)=>{e.stopPropagation();onRemove();}}>
+          <button style={{...S.ctxBtn,color:"#fb7185"}}
+            onPointerDown={(e)=>{e.stopPropagation();onRemove();}}
+            onClick={(e)=>e.stopPropagation()}>
             ✕ Remove
           </button>
           <button style={{...S.ctxBtn,opacity:.6}} onClick={(e)=>{e.stopPropagation();onMenuToggle(null);}}>
