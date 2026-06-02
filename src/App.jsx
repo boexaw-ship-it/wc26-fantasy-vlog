@@ -333,6 +333,8 @@ function PlayerCard({player,isStarter,isCap,isVC,pts,isSwapSrc,isSwapTarget,menu
       ...(isStarter?S.cardStarter:S.cardBench),
       ...(isSwapSrc?{boxShadow:"0 0 0 2px #60a5fa, 0 4px 20px rgba(96,165,250,.4)"}:{}),
       ...(isSwapTarget?{boxShadow:"0 0 0 2px #fbbf24",opacity:.8}:{}),
+      // Fix: elevate card when menu is open so popup renders above all sibling cards
+      ...(menuOpen?{zIndex:100,position:"relative"}:{}),
     }}>
       {/* C / VC badge */}
       {isCap&&<div style={S.capBadge}>C</div>}
@@ -710,7 +712,7 @@ const S = {
 
   pitch:    {position:"relative",overflow:"visible",minHeight:460,padding:"16px 4px",borderRadius:14,background:"linear-gradient(180deg,#0d4e1c 0%,#0f6024 45%,#0f6024 55%,#0d4e1c 100%)",boxShadow:"inset 0 0 40px rgba(0,0,0,.4)",marginBottom:14},
   pitchSvg: {position:"absolute",inset:0,width:"100%",height:"100%",stroke:"rgba(255,255,255,.12)",strokeWidth:".6",pointerEvents:"none"},
-  pitchRow: {display:"flex",justifyContent:"center",gap:6,marginBottom:4,position:"relative",zIndex:1,flexWrap:"wrap"},
+  pitchRow: {display:"flex",justifyContent:"center",gap:6,marginBottom:4,position:"relative",flexWrap:"wrap"},
 
   // Player card
   card:     {display:"flex",flexDirection:"column",alignItems:"center",position:"relative",cursor:"pointer",borderRadius:10,overflow:"visible",touchAction:"manipulation"},
