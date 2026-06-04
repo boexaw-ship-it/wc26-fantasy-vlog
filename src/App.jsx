@@ -239,7 +239,7 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
     pos,players:starterPlayers.filter(p=>p.position===pos),slots:pos==="GK"?1:shape[pos],
   }));
 
-  // Swap: starter↔bench, same position only, formation auto-updates after swap
+  // Swap: starter↔bench cross-position allowed (except GK↔outfield), formation auto-updates
   const handleClick=(pid,isStarter)=>{
     if (!swapSrc){
       setActiveMenu(null);
@@ -254,12 +254,14 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
       setSwapSrc(null);
       return;
     }
-    // Same position only
+    // GK cannot swap with outfield
     const allSquadNow = [...starterPlayers,...benchPlayers];
     const srcPlayer   = allSquadNow.find(p=>p.id===swapSrc.id);
     const destPlayer  = allSquadNow.find(p=>p.id===pid);
-    if (srcPlayer?.position !== destPlayer?.position){
-      setSwapError(`${srcPlayer?.position} ↔ ${destPlayer?.position} မဖြစ်ဘူး — တူညီတဲ့ position ချင်းပဲ လှဲလို့ရတယ်`);
+    const srcIsGK  = srcPlayer?.position==='GK';
+    const destIsGK = destPlayer?.position==='GK';
+    if (srcIsGK !== destIsGK){
+      setSwapError('GK ↔ Outfield လှဲလို့မရဘူး');
       setSwapSrc(null);
       return;
     }
