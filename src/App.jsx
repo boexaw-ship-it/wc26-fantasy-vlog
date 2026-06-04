@@ -117,11 +117,21 @@ export default function App() {
     captain:prev.captain===pid?"":prev.captain,
     viceCaptain:prev.viceCaptain===pid?"":prev.viceCaptain,
   }));
-  const swapPlayers = (sId,bId) => setTeam(prev=>({
-    ...prev,
-    starters:prev.starters.map(id=>id===sId?bId:id),
-    bench:prev.bench.map(id=>id===bId?sId:id),
-  }));
+  // Auto-formation swap: swap starter↔bench and recalculate formation from actual starters
+  const swapPlayers = (sId, bId) => setTeam(prev => {
+    const newStarters = prev.starters.map(id => id === sId ? bId : id);
+    const newBench    = prev.bench.map(id => id === bId ? sId : id);
+    // Count outfield positions in new starters (exclude GK)
+    const starterObjs = newStarters.map(id => allPlayers.find(p => p.id === id)).filter(Boolean);
+    const def = starterObjs.filter(p => p.position === 'DEF').length;
+    const mid = starterObjs.filter(p => p.position === 'MID').length;
+    const fwd = starterObjs.filter(p => p.position === 'FWD').length;
+    // Build dynamic formation string e.g. "4-3-3"
+    const autoFormation = `${def}-${mid}-${fwd}`;
+    // Use auto if valid preset exists, otherwise keep dynamic string (still renders correctly)
+    const formation = FORMATIONS[autoFormation] ? autoFormation : autoFormation;
+    return { ...prev, starters: newStarters, bench: newBench, formation };
+  });
   const setCaptain  = pid=>setTeam(prev=>({...prev,captain:prev.captain===pid?"":pid,viceCaptain:prev.viceCaptain===pid?"":prev.viceCaptain}));
   const setViceCap  = pid=>setTeam(prev=>({...prev,viceCaptain:prev.viceCaptain===pid?"":pid,captain:prev.captain===pid?"":prev.captain}));
   const setFormation= f=>setTeam(prev=>({...prev,formation:f}));
@@ -219,18 +229,26 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
     pos,players:starterPlayers.filter(p=>p.position===pos),slots:pos==="GK"?1:shape[pos],
   }));
 
-  // Fix 1: close any open menu before entering swap mode; show error for same-type swaps
+  // Swap: starter↔bench only; GK cannot swap with outfield
   const handleClick=(pid,isStarter)=>{
     if (!swapSrc){
-      setActiveMenu(null); // close menu before entering swap mode
+      setActiveMenu(null);
       setSwapSrc({id:pid,isStarter});
       setSwapError("");
       return;
     }
     if (swapSrc.id===pid){setSwapSrc(null);setSwapError("");return;}
+    // Must be starter↔bench
     if (swapSrc.isStarter===isStarter){
-      // same type — show helpful error instead of silently failing
-      setSwapError(isStarter?"Can only swap a starter with a bench player.":"Can only swap a bench player with a starter.");
+      setSwapError(isStarter?"Select a bench player to swap with.":"Select a starter to swap with.");
+      setSwapSrc(null);
+      return;
+    }
+    // GK↔GK only
+    const srcPlayer  = [...starterPlayers,...benchPlayers].find(p=>p.id===swapSrc.id);
+    const destPlayer = [...starterPlayers,...benchPlayers].find(p=>p.id===pid);
+    if ((srcPlayer?.position==="GK")!==(destPlayer?.position==="GK")){
+      setSwapError("GK can only swap with GK.");
       setSwapSrc(null);
       return;
     }
