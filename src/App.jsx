@@ -117,19 +117,29 @@ export default function App() {
     captain:prev.captain===pid?"":prev.captain,
     viceCaptain:prev.viceCaptain===pid?"":prev.viceCaptain,
   }));
-  // Auto-formation swap: swap starter↔bench and recalculate formation from actual starters
+  // Swap starter↔bench (same position only) + auto formation from actual starter counts
   const swapPlayers = (sId, bId) => setTeam(prev => {
     const newStarters = prev.starters.map(id => id === sId ? bId : id);
     const newBench    = prev.bench.map(id => id === bId ? sId : id);
-    // Count outfield positions in new starters (exclude GK)
+    // Recalculate formation from new starters
     const starterObjs = newStarters.map(id => allPlayers.find(p => p.id === id)).filter(Boolean);
     const def = starterObjs.filter(p => p.position === 'DEF').length;
     const mid = starterObjs.filter(p => p.position === 'MID').length;
     const fwd = starterObjs.filter(p => p.position === 'FWD').length;
-    // Build dynamic formation string e.g. "4-3-3"
-    const autoFormation = `${def}-${mid}-${fwd}`;
-    // Use auto if valid preset exists, otherwise keep dynamic string (still renders correctly)
-    const formation = FORMATIONS[autoFormation] ? autoFormation : autoFormation;
+    const autoKey = `${def}-${mid}-${fwd}`;
+    // Pick exact match or find closest valid formation
+    let formation = prev.formation;
+    if (FORMATIONS[autoKey]) {
+      formation = autoKey;
+    } else {
+      // Find closest by minimising total diff
+      let bestKey = prev.formation, bestDiff = Infinity;
+      Object.entries(FORMATIONS).forEach(([key, shape]) => {
+        const diff = Math.abs((shape.DEF||0)-def) + Math.abs((shape.MID||0)-mid) + Math.abs((shape.FWD||0)-fwd);
+        if (diff < bestDiff) { bestDiff = diff; bestKey = key; }
+      });
+      formation = bestKey;
+    }
     return { ...prev, starters: newStarters, bench: newBench, formation };
   });
   const setCaptain  = pid=>setTeam(prev=>({...prev,captain:prev.captain===pid?"":pid,viceCaptain:prev.viceCaptain===pid?"":prev.viceCaptain}));
@@ -229,7 +239,7 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
     pos,players:starterPlayers.filter(p=>p.position===pos),slots:pos==="GK"?1:shape[pos],
   }));
 
-  // Swap: starter↔bench only; GK cannot swap with outfield
+  // Swap: starter↔bench, same position only, formation auto-updates after swap
   const handleClick=(pid,isStarter)=>{
     if (!swapSrc){
       setActiveMenu(null);
@@ -240,15 +250,16 @@ function MyTeamView({starterPlayers,benchPlayers,formation,captainId,vcId,onSwap
     if (swapSrc.id===pid){setSwapSrc(null);setSwapError("");return;}
     // Must be starter↔bench
     if (swapSrc.isStarter===isStarter){
-      setSwapError(isStarter?"Select a bench player to swap with.":"Select a starter to swap with.");
+      setSwapError(isStarter?"Bench player ရွေးပါ":"Starter ရွေးပါ");
       setSwapSrc(null);
       return;
     }
-    // GK↔GK only
-    const srcPlayer  = [...starterPlayers,...benchPlayers].find(p=>p.id===swapSrc.id);
-    const destPlayer = [...starterPlayers,...benchPlayers].find(p=>p.id===pid);
-    if ((srcPlayer?.position==="GK")!==(destPlayer?.position==="GK")){
-      setSwapError("GK can only swap with GK.");
+    // Same position only
+    const allSquadNow = [...starterPlayers,...benchPlayers];
+    const srcPlayer   = allSquadNow.find(p=>p.id===swapSrc.id);
+    const destPlayer  = allSquadNow.find(p=>p.id===pid);
+    if (srcPlayer?.position !== destPlayer?.position){
+      setSwapError(`${srcPlayer?.position} ↔ ${destPlayer?.position} မဖြစ်ဘူး — တူညီတဲ့ position ချင်းပဲ လှဲလို့ရတယ်`);
       setSwapSrc(null);
       return;
     }
