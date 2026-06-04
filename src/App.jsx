@@ -658,7 +658,7 @@ function VlogView({starterPlayers,benchPlayers,formation,teamName,captainId,vcId
 }
 
 // ── JERSEY + PITCH SVG ────────────────────────────────────────────────────────
-function Jersey({primary,secondary,number,size=54}) {
+function Jersey({primary,secondary,number,size=66}) {
   return (
     <svg width={size} height={size} viewBox="0 0 100 96" fill="none">
       <path d="M28 18 10 32l9 11 7-6v45h48V37l7 6 9-11-18-14c-6 6-13 9-22 9s-16-3-22-9Z"
@@ -684,85 +684,91 @@ function PitchLines() {
 
 // ── STYLES ────────────────────────────────────────────────────────────────────
 const S = {
-  shell:    {minHeight:"100vh",background:"#07111f",color:"#e5edf7",fontFamily:"Inter,system-ui,sans-serif"},
-  loading:  {display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontSize:18,color:"#64748b"},
-  header:   {display:"flex",gap:12,padding:"12px 14px",background:"#0b1626",borderBottom:"1px solid rgba(255,255,255,.08)",alignItems:"flex-start"},
-  kicker:   {color:"#facc15",fontSize:11,textTransform:"uppercase",letterSpacing:1.5,fontWeight:800,marginBottom:2},
-  hTitle:   {margin:"2px 0",color:"#fff",fontSize:19,fontWeight:900,cursor:"pointer"},
-  nameInput:{background:"#101b2d",border:"1px solid #facc15",color:"#fff",borderRadius:8,padding:"3px 10px",fontSize:17,fontWeight:900,outline:"none",width:"100%",boxSizing:"border-box"},
-  hSub:     {display:"flex",alignItems:"center",gap:6,flexWrap:"wrap",marginTop:4},
-  fSel:     {background:"#101b2d",border:"1px solid rgba(255,255,255,.2)",color:"#fff",borderRadius:8,padding:"4px 8px",fontWeight:700,outline:"none"},
-  cPill:    {background:"#b45309",color:"#fef3c7",fontSize:10,fontWeight:700,borderRadius:5,padding:"2px 7px"},
-  hBox:     {minWidth:96,display:"flex",flexDirection:"column",gap:3,background:"#111c2e",border:"1px solid rgba(255,255,255,.08)",borderRadius:10,padding:"8px 12px"},
-  hBoxRow:  {display:"flex",justifyContent:"space-between",alignItems:"center",gap:8},
-  budgetInput:{background:"transparent",border:"none",color:"#4ade80",width:70,fontWeight:800,fontSize:13,outline:"none",textAlign:"right"},
-  muted:    {color:"#64748b",fontSize:11},
+  // ── Shell & Loading ──
+  shell:    {minHeight:"100vh",background:"linear-gradient(160deg,#020c1b 0%,#050e20 60%,#020c1b 100%)",color:"#e8f4ff",fontFamily:"Inter,system-ui,sans-serif"},
+  loading:  {display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",fontSize:20,color:"#00d4ff"},
 
-  tabBar:   {display:"grid",gridTemplateColumns:"repeat(4,1fr)",background:"#0a1322",borderBottom:"1px solid rgba(255,255,255,.08)"},
-  tab:      {border:0,background:"transparent",color:"#64748b",padding:"12px 4px",fontWeight:800,cursor:"pointer",fontSize:12},
-  tabOn:    {color:"#07111f",background:"#facc15"},
-  content:  {padding:"10px 10px 40px"},
+  // ── Header ──
+  header:   {display:"flex",gap:14,padding:"14px 18px",background:"linear-gradient(90deg,#020c1b 0%,#061830 50%,#020c1b 100%)",borderBottom:"2px solid #00d4ff",boxShadow:"0 0 28px rgba(0,212,255,0.18)",alignItems:"flex-start"},
+  kicker:   {color:"#00d4ff",fontSize:12,textTransform:"uppercase",letterSpacing:2,fontWeight:900,marginBottom:3,textShadow:"0 0 8px rgba(0,212,255,0.6)"},
+  hTitle:   {margin:"2px 0",color:"#fff",fontSize:22,fontWeight:900,cursor:"pointer",letterSpacing:"-0.5px"},
+  nameInput:{background:"#061830",border:"1px solid #00d4ff",color:"#fff",borderRadius:8,padding:"4px 12px",fontSize:20,fontWeight:900,outline:"none",width:"100%",boxSizing:"border-box"},
+  hSub:     {display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",marginTop:5},
+  fSel:     {background:"#061830",border:"1px solid rgba(0,212,255,0.35)",color:"#00d4ff",borderRadius:8,padding:"5px 10px",fontWeight:800,outline:"none",fontSize:13},
+  cPill:    {background:"rgba(245,158,11,0.2)",color:"#fbbf24",border:"1px solid #f59e0b",fontSize:11,fontWeight:800,borderRadius:6,padding:"2px 9px"},
+  hBox:     {minWidth:108,display:"flex",flexDirection:"column",gap:4,background:"#061830",border:"1px solid rgba(0,212,255,0.2)",borderRadius:12,padding:"10px 14px",boxShadow:"0 0 16px rgba(0,212,255,0.08)"},
+  hBoxRow:  {display:"flex",justifyContent:"space-between",alignItems:"center",gap:10},
+  budgetInput:{background:"transparent",border:"none",color:"#00ff88",width:72,fontWeight:900,fontSize:15,outline:"none",textAlign:"right"},
+  muted:    {color:"#4a7a9b",fontSize:12},
 
-  pitchWrap:{maxWidth:860,margin:"0 auto"},
-  ptBar:    {display:"flex",background:"#0b1626",border:"1px solid rgba(255,255,255,.08)",borderRadius:10,marginBottom:10,overflow:"hidden"},
-  ptCell:   {flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"8px 4px",gap:2},
-  ptDivider:{borderLeft:"1px solid rgba(255,255,255,.08)",borderRight:"1px solid rgba(255,255,255,.08)"},
-  swapBanner:{background:"#1e3a5f",border:"1px solid #3b82f6",borderRadius:8,padding:"8px 12px",marginBottom:10,fontSize:12,color:"#93c5fd",display:"flex",justifyContent:"space-between",alignItems:"center"},
-  cancelBtn:{background:"#1d4ed8",border:"none",color:"#fff",borderRadius:6,padding:"4px 10px",cursor:"pointer",fontSize:12},
+  // ── Tab Bar ──
+  tabBar:   {display:"grid",gridTemplateColumns:"repeat(4,1fr)",background:"#020c1b",borderBottom:"1px solid rgba(0,212,255,0.15)"},
+  tab:      {border:0,borderBottom:"3px solid transparent",background:"transparent",color:"#4a7a9b",padding:"14px 4px",fontWeight:800,cursor:"pointer",fontSize:14,transition:"all 0.2s",letterSpacing:"0.3px"},
+  tabOn:    {color:"#00d4ff",borderBottomColor:"#00d4ff",background:"rgba(0,212,255,0.06)",textShadow:"0 0 12px rgba(0,212,255,0.6)"},
+  content:  {padding:"12px 12px 40px"},
 
-  pitch:    {position:"relative",overflow:"visible",minHeight:460,padding:"16px 4px",borderRadius:14,background:"linear-gradient(180deg,#0d4e1c 0%,#0f6024 45%,#0f6024 55%,#0d4e1c 100%)",boxShadow:"inset 0 0 40px rgba(0,0,0,.4)",marginBottom:14},
-  pitchSvg: {position:"absolute",inset:0,width:"100%",height:"100%",stroke:"rgba(255,255,255,.12)",strokeWidth:".6",pointerEvents:"none"},
-  pitchRow: {display:"flex",justifyContent:"center",gap:6,marginBottom:4,position:"relative",flexWrap:"wrap"},
+  // ── Pitch ──
+  pitchWrap:{maxWidth:900,margin:"0 auto"},
+  ptBar:    {display:"flex",background:"#061830",border:"1px solid rgba(0,212,255,0.15)",borderRadius:12,marginBottom:12,overflow:"hidden"},
+  ptCell:   {flex:1,display:"flex",flexDirection:"column",alignItems:"center",padding:"10px 4px",gap:3},
+  ptDivider:{borderLeft:"1px solid rgba(0,212,255,0.12)",borderRight:"1px solid rgba(0,212,255,0.12)"},
+  swapBanner:{background:"#061e3a",border:"1px solid #00d4ff",borderRadius:10,padding:"10px 14px",marginBottom:12,fontSize:13,color:"#7dd3fc",display:"flex",justifyContent:"space-between",alignItems:"center",boxShadow:"0 0 16px rgba(0,212,255,0.15)"},
+  cancelBtn:{background:"#1d4ed8",border:"none",color:"#fff",borderRadius:7,padding:"5px 12px",cursor:"pointer",fontSize:13,fontWeight:700},
 
-  // Player card
-  card:     {display:"flex",flexDirection:"column",alignItems:"center",position:"relative",cursor:"pointer",borderRadius:10,overflow:"visible",touchAction:"manipulation"},
-  cardStarter:{width:88,padding:"6px 4px 4px",background:"rgba(0,0,0,.45)",backdropFilter:"blur(4px)",border:"1px solid rgba(255,255,255,.1)"},
-  cardBench:{width:"100%",padding:"8px 6px 6px",background:"#0d1f35",border:"1px solid rgba(255,255,255,.08)"},
-  cardEmpty:{cursor:"default",opacity:.45},
+  pitch:    {position:"relative",overflow:"visible",minHeight:520,padding:"20px 6px",borderRadius:16,background:"linear-gradient(180deg,#0a3d1a 0%,#0d5220 45%,#0d5220 55%,#0a3d1a 100%)",boxShadow:"inset 0 0 60px rgba(0,0,0,0.5), 0 0 40px rgba(0,255,136,0.05)",marginBottom:16,border:"1px solid rgba(0,255,136,0.1)"},
+  pitchSvg: {position:"absolute",inset:0,width:"100%",height:"100%",stroke:"rgba(255,255,255,.15)",strokeWidth:".7",pointerEvents:"none"},
+  pitchRow: {display:"flex",justifyContent:"center",gap:10,marginBottom:6,position:"relative",flexWrap:"wrap"},
+
+  // ── Player Card — BIGGER for video ──
+  card:     {display:"flex",flexDirection:"column",alignItems:"center",position:"relative",cursor:"pointer",borderRadius:12,overflow:"visible",touchAction:"manipulation"},
+  cardStarter:{width:108,padding:"8px 6px 6px",background:"rgba(0,0,0,0.55)",backdropFilter:"blur(6px)",border:"1px solid rgba(0,212,255,0.25)",boxShadow:"0 4px 20px rgba(0,0,0,0.6)"},
+  cardBench:{width:"100%",padding:"10px 8px 8px",background:"#061830",border:"1px solid rgba(0,212,255,0.15)",borderRadius:12},
+  cardEmpty:{cursor:"default",opacity:.4},
   emptyJersey:{display:"flex",justifyContent:"center"},
-  cardInfo: {width:"100%",textAlign:"center",marginTop:3},
-  cardName: {fontSize:10,fontWeight:700,color:"#fff",textShadow:"0 1px 4px rgba(0,0,0,.9)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"},
-  cardMeta: {display:"flex",alignItems:"center",justifyContent:"center",gap:4,marginTop:2},
-  posBadge: {fontSize:8,fontWeight:900,borderRadius:4,padding:"1px 4px",color:"#fff"},
-  cardTeam: {fontSize:8,color:"rgba(255,255,255,.5)"},
-  cardBottom:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:3,paddingTop:3,borderTop:"1px solid rgba(255,255,255,.08)"},
-  cardPrice:{fontSize:9,fontWeight:700,color:"#facc15"},
-  cardPts:  {fontSize:9,fontWeight:700,display:"flex",alignItems:"center",gap:2},
-  cardFix:  {fontSize:7,color:"rgba(255,255,255,.4)",marginTop:2,textAlign:"center"},
-  x2:       {background:"#92400e",color:"#fef3c7",fontSize:7,fontWeight:900,borderRadius:3,padding:"0 3px",marginLeft:2},
-  capBadge: {position:"absolute",top:-6,right:-4,background:"#f59e0b",color:"#000",fontSize:8,fontWeight:900,borderRadius:99,width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 2px 6px rgba(0,0,0,.5)"},
-  vcBadge:  {position:"absolute",top:-6,right:-4,background:"#3b82f6",color:"#fff",fontSize:8,fontWeight:900,borderRadius:99,width:16,height:16,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 2px 6px rgba(0,0,0,.5)"},
+  cardInfo: {width:"100%",textAlign:"center",marginTop:5},
+  cardName: {fontSize:13,fontWeight:800,color:"#fff",textShadow:"0 1px 6px rgba(0,0,0,1)",whiteSpace:"nowrap",overflow:"hidden",textOverflow:"ellipsis",maxWidth:"100%"},
+  cardMeta: {display:"flex",alignItems:"center",justifyContent:"center",gap:4,marginTop:3},
+  posBadge: {fontSize:10,fontWeight:900,borderRadius:4,padding:"1px 5px",color:"#fff"},
+  cardTeam: {fontSize:10,color:"rgba(255,255,255,.55)",fontWeight:600},
+  cardBottom:{display:"flex",justifyContent:"space-between",alignItems:"center",marginTop:4,paddingTop:4,borderTop:"1px solid rgba(255,255,255,.1)"},
+  cardPrice:{fontSize:11,fontWeight:800,color:"#ffd700"},
+  cardPts:  {fontSize:11,fontWeight:800,display:"flex",alignItems:"center",gap:2},
+  cardFix:  {fontSize:9,color:"rgba(255,255,255,.4)",marginTop:2,textAlign:"center"},
+  x2:       {background:"#92400e",color:"#fef3c7",fontSize:9,fontWeight:900,borderRadius:3,padding:"0 4px",marginLeft:2},
+  capBadge: {position:"absolute",top:-8,right:-5,background:"#f59e0b",color:"#000",fontSize:10,fontWeight:900,borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 0 12px rgba(245,158,11,0.7)"},
+  vcBadge:  {position:"absolute",top:-8,right:-5,background:"#3b82f6",color:"#fff",fontSize:10,fontWeight:900,borderRadius:99,width:20,height:20,display:"flex",alignItems:"center",justifyContent:"center",zIndex:5,boxShadow:"0 0 12px rgba(59,130,246,0.7)"},
   cardTapBtn:{background:"none",border:"none",padding:0,margin:0,cursor:"pointer",display:"flex",justifyContent:"center",width:"100%",touchAction:"manipulation",WebkitTapHighlightColor:"transparent"},
-  ctxMenu:  {position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",background:"#111827",border:"1px solid #374151",borderRadius:10,overflow:"hidden",zIndex:999,boxShadow:"0 12px 40px rgba(0,0,0,.9)",minWidth:160,marginTop:4},
-  ctxBtn:   {display:"block",width:"100%",background:"none",border:"none",padding:"12px 14px",fontSize:13,fontWeight:600,color:"#e5edf7",cursor:"pointer",borderBottom:"1px solid #1f2937",whiteSpace:"nowrap",textAlign:"left",touchAction:"manipulation",WebkitTapHighlightColor:"transparent"},
+  ctxMenu:  {position:"absolute",top:"100%",left:"50%",transform:"translateX(-50%)",background:"#061830",border:"1px solid rgba(0,212,255,0.3)",borderRadius:12,overflow:"hidden",zIndex:999,boxShadow:"0 16px 48px rgba(0,0,0,0.95)",minWidth:170,marginTop:6},
+  ctxBtn:   {display:"block",width:"100%",background:"none",border:"none",padding:"14px 16px",fontSize:14,fontWeight:700,color:"#e8f4ff",cursor:"pointer",borderBottom:"1px solid rgba(0,212,255,0.08)",whiteSpace:"nowrap",textAlign:"left",touchAction:"manipulation",WebkitTapHighlightColor:"transparent"},
 
-  benchHead:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"8px 0 6px"},
-  benchRow: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:8,marginBottom:10},
+  benchHead:{display:"flex",justifyContent:"space-between",alignItems:"center",margin:"10px 0 8px"},
+  benchRow: {display:"grid",gridTemplateColumns:"repeat(4,1fr)",gap:10,marginBottom:12},
   legend:   {display:"flex",gap:10,justifyContent:"center",alignItems:"center",opacity:.6,marginTop:6,flexWrap:"wrap"},
-  legItem:  {display:"flex",alignItems:"center",gap:4,fontSize:11},
-  badge:    {fontSize:9,fontWeight:700,borderRadius:4,padding:"1px 5px",color:"#fff"},
+  legItem:  {display:"flex",alignItems:"center",gap:4,fontSize:12},
+  badge:    {fontSize:10,fontWeight:700,borderRadius:4,padding:"2px 6px",color:"#fff"},
 
-  // Players tab
-  page:     {maxWidth:860,margin:"0 auto"},
-  filterRow:{display:"flex",gap:6,flexWrap:"wrap",marginBottom:8},
-  fBtn:     {background:"#111c2e",border:"1px solid rgba(255,255,255,.1)",color:"#64748b",borderRadius:8,padding:"6px 10px",fontSize:11,fontWeight:700,cursor:"pointer"},
-  fBtnOn:   {background:"#facc15",color:"#07111f",borderColor:"#facc15"},
-  teamSel:  {background:"#111c2e",border:"1px solid rgba(255,255,255,.1)",color:"#fff",borderRadius:8,padding:"6px 10px",fontSize:12,fontWeight:700,outline:"none",cursor:"pointer"},
-  searchBox:{background:"#111c2e",border:"1px solid rgba(255,255,255,.1)",color:"#fff",borderRadius:8,padding:"8px 12px",fontSize:13,outline:"none",width:"100%",boxSizing:"border-box",marginBottom:6},
-  playerList:{display:"flex",flexDirection:"column",gap:6},
-  pRow:     {display:"flex",alignItems:"center",gap:10,background:"#0d1f35",border:"1px solid rgba(255,255,255,.06)",borderRadius:10,padding:"8px 10px"},
-  pRowSel:  {border:"1px solid #22c55e55",background:"#14532d22"},
-  pInfo:    {flex:1,minWidth:0,display:"flex",flexDirection:"column",gap:2},
-  btn:      {border:"none",borderRadius:6,padding:"5px 9px",fontSize:11,fontWeight:700,cursor:"pointer"},
+  // ── Players Tab ──
+  page:     {maxWidth:900,margin:"0 auto"},
+  filterRow:{display:"flex",gap:8,flexWrap:"wrap",marginBottom:10},
+  fBtn:     {background:"#061830",border:"1px solid rgba(0,212,255,0.2)",color:"#4a7a9b",borderRadius:9,padding:"7px 13px",fontSize:13,fontWeight:800,cursor:"pointer",transition:"all 0.15s"},
+  fBtnOn:   {background:"rgba(0,212,255,0.12)",color:"#00d4ff",borderColor:"#00d4ff",textShadow:"0 0 8px rgba(0,212,255,0.5)"},
+  teamSel:  {background:"#061830",border:"1px solid rgba(0,212,255,0.2)",color:"#e8f4ff",borderRadius:9,padding:"7px 12px",fontSize:13,fontWeight:700,outline:"none",cursor:"pointer"},
+  searchBox:{background:"#061830",border:"1px solid rgba(0,212,255,0.2)",color:"#e8f4ff",borderRadius:9,padding:"10px 14px",fontSize:15,outline:"none",width:"100%",boxSizing:"border-box",marginBottom:8},
+  playerList:{display:"flex",flexDirection:"column",gap:8},
+  pRow:     {display:"flex",alignItems:"center",gap:12,background:"#061830",border:"1px solid rgba(0,212,255,0.1)",borderRadius:12,padding:"10px 14px"},
+  pRowSel:  {border:"1px solid rgba(0,255,136,0.4)",background:"rgba(0,255,136,0.05)"},
+  pInfo:    {flex:1,minWidth:0,display:"flex",flexDirection:"column",gap:3},
+  btn:      {border:"none",borderRadius:8,padding:"7px 12px",fontSize:13,fontWeight:800,cursor:"pointer"},
 
-  fixCard:  {display:"flex",alignItems:"center",gap:8,flexWrap:"wrap",background:"#0d1f35",border:"1px solid rgba(255,255,255,.06)",borderRadius:9,padding:"10px 12px",marginBottom:6},
-  vs:       {fontSize:9,background:"#1f2937",borderRadius:4,padding:"2px 6px",color:"#64748b"},
+  // ── Fixtures ──
+  fixCard:  {display:"flex",alignItems:"center",gap:10,flexWrap:"wrap",background:"#061830",border:"1px solid rgba(0,212,255,0.1)",borderRadius:11,padding:"12px 14px",marginBottom:8},
+  vs:       {fontSize:10,background:"#0a2040",borderRadius:5,padding:"3px 8px",color:"#4a7a9b",fontWeight:700},
 
-  // Vlog
-  vlogHeader:{textAlign:"center",marginBottom:12,background:"#0b1626",borderRadius:12,padding:"14px",border:"1px solid rgba(255,255,255,.08)"},
-  recDot:   {color:"#ef4444",fontSize:11,fontWeight:700,letterSpacing:3,marginBottom:4},
-  vlogTitle:{color:"#fff",fontSize:20,fontWeight:900,margin:"2px 0 6px"},
-  vlogMeta: {display:"flex",justifyContent:"center",gap:14,flexWrap:"wrap",marginBottom:8},
-  vlogCapRow:{display:"flex",gap:12,justifyContent:"center",flexWrap:"wrap",marginTop:8},
-  vlogCapCard:{display:"flex",flexDirection:"column",alignItems:"center",gap:3,background:"#111c2e",borderRadius:10,padding:"10px 14px",minWidth:90,border:"1px solid rgba(255,255,255,.1)"},
+  // ── Vlog Mode ──
+  vlogHeader:{textAlign:"center",marginBottom:14,background:"linear-gradient(135deg,#061830,#0a2a5e)",borderRadius:16,padding:"18px",border:"1px solid rgba(0,212,255,0.25)",boxShadow:"0 0 30px rgba(0,212,255,0.12)"},
+  recDot:   {color:"#ff2d78",fontSize:13,fontWeight:900,letterSpacing:4,marginBottom:6,textShadow:"0 0 10px rgba(255,45,120,0.7)"},
+  vlogTitle:{color:"#fff",fontSize:26,fontWeight:900,margin:"2px 0 8px",textShadow:"0 0 20px rgba(0,212,255,0.3)"},
+  vlogMeta: {display:"flex",justifyContent:"center",gap:16,flexWrap:"wrap",marginBottom:10},
+  vlogCapRow:{display:"flex",gap:14,justifyContent:"center",flexWrap:"wrap",marginTop:10},
+  vlogCapCard:{display:"flex",flexDirection:"column",alignItems:"center",gap:4,background:"rgba(0,212,255,0.06)",borderRadius:12,padding:"12px 16px",minWidth:100,border:"1px solid rgba(0,212,255,0.2)",boxShadow:"0 0 16px rgba(0,212,255,0.08)"},
 };
